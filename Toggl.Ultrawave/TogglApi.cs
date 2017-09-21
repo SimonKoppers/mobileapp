@@ -25,7 +25,7 @@ namespace Toggl.Ultrawave
 
             Tags = new TagsApi(endpoints.Tags, apiClient, serializer, credentials);
             User = new UserApi(endpoints.User, apiClient, serializer, credentials);
-            Tasks = new TasksApi();
+            Tasks = new TasksApi(endpoints.Tasks, apiClient, serializer, credentials);
             Status = new StatusApi(endpoints.Status, apiClient);
             Clients = new ClientsApi(endpoints.Clients, apiClient, serializer, credentials);
             Projects = new ProjectsApi(endpoints.Projects, apiClient, serializer, credentials);

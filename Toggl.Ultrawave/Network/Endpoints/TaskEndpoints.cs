@@ -1,4 +1,5 @@
 ﻿using System;
+using Toggl.Multivac.Extensions;
 
 namespace Toggl.Ultrawave.Network
 {
@@ -12,5 +13,11 @@ namespace Toggl.Ultrawave.Network
         }
 
         public Endpoint Get => Endpoint.Get(baseUrl, "me/tasks");
+
+        public Endpoint GetSince(DateTimeOffset threshold)
+            => Endpoint.Get(baseUrl, $"me/tasks?since={threshold.ToUnixTimeSeconds()}");
+
+        public Endpoint Post(long workspaceId, long projectId)
+            => Endpoint.Post(baseUrl, $"/workspaces/{workspaceId}/projects/{projectId}/tasks");
     }
 }
