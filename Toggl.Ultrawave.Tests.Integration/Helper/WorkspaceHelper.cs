@@ -26,7 +26,7 @@ namespace Toggl.Ultrawave.Tests.Integration.Helper
 
         public static async Task SetSubscription(IUser user, long workspaceId, PricingPlans plan)
         {
-            var json = $"{{\"pricing_plan_id\": \"{(int)plan}\"}}";
+            var json = $"{{\"pricing_plan_id\":{(int)plan}}}";
 
             await makeRequest($"https://toggl.space/api/v9/workspaces/{workspaceId}/subscriptions", HttpMethod.Post, user, json);
         }
