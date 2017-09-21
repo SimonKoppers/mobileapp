@@ -18,6 +18,6 @@ namespace Toggl.Ultrawave.Network
             => Endpoint.Get(baseUrl, $"me/tasks?since={threshold.ToUnixTimeSeconds()}");
 
         public Endpoint Post(long workspaceId, long projectId)
-            => Endpoint.Post(baseUrl, $"/workspaces/{workspaceId}/projects/{projectId}/tasks");
+            => Endpoint.Post(baseUrl, $"workspaces/{workspaceId}/projects/{projectId}/tasks");
     }
 }
