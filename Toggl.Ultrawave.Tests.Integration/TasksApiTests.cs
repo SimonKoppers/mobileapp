@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Reactive;
 using System.Reactive.Linq;
 using FluentAssertions;
 using Xunit;
-using Toggl.Ultrawave.ApiClients;
 using Toggl.Ultrawave.Models;
 using Toggl.Ultrawave.Exceptions;
 using Toggl.Ultrawave.Tests.Integration.BaseTests;
@@ -21,7 +19,7 @@ namespace Toggl.Ultrawave.Tests.Integration
             {
                 var (togglApi, user) = await SetupTestUser();
             
-                Action creatingTask = () => createTask(togglApi, PricingPlans.Free);
+                Action creatingTask = () => createTask(togglApi, PricingPlans.Free).Wait();
     
                 creatingTask.ShouldThrow<ForbiddenException>();
             }
@@ -44,14 +42,28 @@ namespace Toggl.Ultrawave.Tests.Integration
 
             private IObservable<ITask> createTask(ITogglApi togglApi, PricingPlans plan)
             {
+                var user = togglApi.User.Get().Wait();
                 if (plan != PricingPlans.Free)
-                {
-                    var user = togglApi.User.Get().Wait();
                     WorkspaceHelper.SetSubscription(user, user.DefaultWorkspaceId, plan).Wait();
-                }
             
-                var project = togglApi.Projects.Create(new Project { Name = Guid.NewGuid().ToString() }).SingleAsync().Wait();
-                return togglApi.Tasks.Create(new Task { WorkspaceId = project.WorkspaceId, ProjectId = project.Id, Name = Guid.NewGuid().ToString() });
+                var project = togglApi.Projects
+                    .Create(
+                        new Project
+                        {
+                            Name = Guid.NewGuid().ToString(),
+                            Active = true,
+                            WorkspaceId = user.DefaultWorkspaceId
+                        })
+                    .Wait();
+
+                return togglApi.Tasks
+                    .Create(
+                        new Task
+                        {
+                            WorkspaceId = project.WorkspaceId,
+                            ProjectId = project.Id,
+                            Name = Guid.NewGuid().ToString()
+                        });
             }
         }
     }
