@@ -33,6 +33,19 @@ namespace Toggl.PrimeRadiant.Realm
             return CreateObservable(() => Adapter.BatchUpdate(entities, conflictResolution));
         }
 
+        public IObservable<IEnumerable<(ConflictResolutionMode ResolutionMode, TModel Entity)>> BatchUpdate(
+            IEnumerable<(long Id, TModel Entity)> entities,
+            Func<TModel, TModel, ConflictResolutionMode> conflictResolution,
+            Func<TModel, bool> canHaveRival,
+            Func<TModel, Expression<Func<TModel, bool>>> areRivals,
+            Func<TModel, TModel, (TModel FixedEntity, TModel FixedRival)> fixRivals)
+        {
+            Ensure.Argument.IsNotNull(entities, nameof(entities));
+            Ensure.Argument.IsNotNull(conflictResolution, nameof(conflictResolution));
+
+            return CreateObservable(() => Adapter.BatchUpdate(entities, conflictResolution, canHaveRival, areRivals, fixRivals));
+        }
+
         public IObservable<TModel> GetById(long id)
             => CreateObservable(() => Adapter.Get(id));
 
