@@ -291,7 +291,8 @@ namespace Toggl.Foundation.Tests.Sync.States
             {
                 repository.Received().BatchUpdate(Arg.Is<IEnumerable<(long, TDatabaseInterface entity)>>(
                         list => list.Count() == entities.Count && list.Select(pair => pair.Item2).All(ArePersistedAndClean(entities))),
-                    Arg.Any<Func<TDatabaseInterface, TDatabaseInterface, ConflictResolutionMode>>());
+                    Arg.Any<Func<TDatabaseInterface, TDatabaseInterface, ConflictResolutionMode>>(),
+                    Arg.Any<IRivalsResolver<TDatabaseInterface>>());
             }
         }
     }

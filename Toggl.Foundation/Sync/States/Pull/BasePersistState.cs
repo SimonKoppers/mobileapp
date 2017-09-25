@@ -18,13 +18,20 @@ namespace Toggl.Foundation.Sync.States
 
         private readonly IConflictResolver<TDatabaseInterface> conflictResolver;
 
+        private readonly IRivalsResolver<TDatabaseInterface> rivalsResolver;
+
         public StateResult<FetchObservables> FinishedPersisting { get; } = new StateResult<FetchObservables>();
 
-        protected BasePersistState(IRepository<TDatabaseInterface> repository, ISinceParameterRepository sinceParameterRepository, IConflictResolver<TDatabaseInterface> conflictResolver)
+        protected BasePersistState(
+            IRepository<TDatabaseInterface> repository,
+            ISinceParameterRepository sinceParameterRepository,
+            IConflictResolver<TDatabaseInterface> conflictResolver,
+            IRivalsResolver<TDatabaseInterface> rivalsResolver = null)
         {
             this.repository = repository;
             this.sinceParameterRepository = sinceParameterRepository;
             this.conflictResolver = conflictResolver;
+            this.rivalsResolver = rivalsResolver;
         }
 
         public IObservable<ITransition> Start(FetchObservables fetch)
@@ -35,7 +42,7 @@ namespace Toggl.Foundation.Sync.States
                 .Select(entities => entities ?? new List<TInterface>())
                 .Select(entities => entities.Select(ConvertToDatabaseEntity).ToList())
                 .SelectMany(databaseEntities =>
-                    repository.BatchUpdate(databaseEntities.Select(entity => (GetId(entity), entity)), conflictResolver.Resolve)
+                    repository.BatchUpdate(databaseEntities.Select(entity => (GetId(entity), entity)), conflictResolver.Resolve, rivalsResolver)
                         .Select(results => results.Select(result => result.Item2))
                         .IgnoreElements()
                         .Concat(Observable.Return(databaseEntities)))
