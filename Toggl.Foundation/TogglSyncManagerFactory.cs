@@ -1,4 +1,5 @@
-﻿using Toggl.Foundation.Sync;
+﻿using System;
+using Toggl.Foundation.Sync;
 using Toggl.Foundation.Sync.States;
 using Toggl.PrimeRadiant;
 using Toggl.Ultrawave;
@@ -7,6 +8,7 @@ using Toggl.Foundation.Tests.Sync.States;
 using Toggl.Multivac.Models;
 using Toggl.PrimeRadiant.Models;
 using Toggl.Foundation.DataSources;
+using Toggl.Foundation.Sync.States.Push;
 
 namespace Toggl.Foundation
 {
@@ -21,7 +23,7 @@ namespace Toggl.Foundation
             var queue = new SyncStateQueue();
             var entryPoints = new StateMachineEntryPoints();
             var transitions = new TransitionHandlerProvider();
-            ConfigureTransitions(transitions, database, api, dataSource, entryPoints);
+            ConfigureTransitions(transitions, database, api, dataSource, scheduler, entryPoints);
             var stateMachine = new StateMachine(transitions, scheduler);
             var orchestrator = new StateMachineOrchestrator(stateMachine, entryPoints);
 
@@ -31,11 +33,13 @@ namespace Toggl.Foundation
         public static void ConfigureTransitions(
             TransitionHandlerProvider transitions,
             ITogglDatabase database,
-            ITogglApi api, ITogglDataSource dataSource,
+            ITogglApi api,
+            ITogglDataSource dataSource,
+            IScheduler scheduler,
             StateMachineEntryPoints entryPoints)
         {
             configurePullTransitions(transitions, database, api, dataSource, entryPoints.StartPullSync);
-            configurePushTransitions(transitions, database, api, dataSource, entryPoints.StartPushSync);
+            configurePushTransitions(transitions, database, api, dataSource, scheduler, entryPoints.StartPushSync);
         }
 
         private static void configurePullTransitions(
@@ -68,9 +72,10 @@ namespace Toggl.Foundation
             ITogglDatabase database,
             ITogglApi api,
             ITogglDataSource dataSource,
+            IScheduler scheduler,
             StateResult entryPoint)
         {
-            configurePushTransitionsForTimeEntries(transitions, database, api, dataSource, entryPoint);
+            configurePushTransitionsForTimeEntries(transitions, database, api, dataSource, scheduler, entryPoint);
         }
 
         private static IStateResult configurePushTransitionsForTimeEntries(
@@ -78,6 +83,7 @@ namespace Toggl.Foundation
             ITogglDatabase database,
             ITogglApi api,
             ITogglDataSource dataSource,
+            IScheduler scheduler,
             StateResult entryPoint)
         {
             var push = new PushTimeEntriesState(database);
@@ -86,7 +92,11 @@ namespace Toggl.Foundation
             var update = new UpdateTimeEntryState(api, dataSource.TimeEntries);
             var unsyncable = new UnsyncableTimeEntryState(dataSource.TimeEntries);
 
-            return configurePush(transitions, entryPoint, push, pushOne, create, update, unsyncable);
+            var rnd = new Random();
+            var fastRetry = new FastRetryPushState<IDatabaseTimeEntry>(api, scheduler, rnd);
+            var slowRetry = new SlowRetryPushState<IDatabaseTimeEntry>(api, scheduler, rnd);
+
+            return configurePush(transitions, entryPoint, push, pushOne, create, update, unsyncable, fastRetry, slowRetry);
         }
 
         private static IStateResult configurePush<T>(
@@ -96,7 +106,9 @@ namespace Toggl.Foundation
             PushOneEntityState<T> pushOne,
             BaseCreateEntityState<T> create,
             BaseUpdateEntityState<T> update,
-            BaseUnsyncableEntityState<T> markUnsyncable)
+            BaseUnsyncableEntityState<T> markUnsyncable,
+            FastRetryPushState<T> fastRetry,
+            SlowRetryPushState<T> slowRetry)
             where T : class, IBaseModel, IDatabaseSyncable
         {
             transitions.ConfigureTransition(entryPoint, push.Start);
@@ -107,6 +119,13 @@ namespace Toggl.Foundation
             transitions.ConfigureTransition(create.CreatingFailed, markUnsyncable.Start);
             transitions.ConfigureTransition(update.UpdatingSucceeded, push.Start);
             transitions.ConfigureTransition(update.UpdatingFailed, markUnsyncable.Start);
+
+            transitions.ConfigureTransition(markUnsyncable.FastRetry, fastRetry.Start);
+            transitions.ConfigureTransition(markUnsyncable.SlowRetry, slowRetry.Start);
+            transitions.ConfigureTransition(fastRetry.ServerIsUnavailable, fastRetry.Start);
+            transitions.ConfigureTransition(slowRetry.ServerIsUnavailable, slowRetry.Start);
+            transitions.ConfigureTransition(fastRetry.ServerIsAvailable, pushOne.Start);
+            transitions.ConfigureTransition(slowRetry.ServerIsAvailable, pushOne.Start);
 
             return push.NothingToPush;
         }
