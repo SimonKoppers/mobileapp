@@ -13,7 +13,8 @@ namespace Toggl.Foundation.Tests.Sync.States
         private IRepository<TModel> repository;
 
         public StateResult<TModel> MarkedAsUnsyncable { get; } = new StateResult<TModel>();
-        public StateResult<TModel> EnterRetryLoop { get; } = new StateResult<TModel>();
+        public StateResult<(TModel Entity, double LastWaitingTime)> FastRetry { get; } = new StateResult<(TModel, double)>();
+        public StateResult<(TModel Entity, double LastWaitingTime)> SlowRetry { get; } = new StateResult<(TModel, double)>();
 
         public BaseUnsyncableEntityState(IRepository<TModel> repository)
         {
@@ -25,7 +26,7 @@ namespace Toggl.Foundation.Tests.Sync.States
                 ? failBecauseOfNullArguments(failedPush)
                 : failedPush.Reason is ApiException
                     ? failedPush.Reason is ServerErrorException
-                        ? enterRetryLoop(failedPush.Entity)
+                        ? enterRetryLoop(failedPush)
                         : markAsUnsyncable(failedPush.Entity, failedPush.Reason.Message)
                     : failBecauseOfUnexpectedError(failedPush.Reason);
 
@@ -43,8 +44,10 @@ namespace Toggl.Foundation.Tests.Sync.States
                 .UpdateWithConflictResolution(entity.Id, CreateUnsyncableFrom(entity, reason), overwriteIfLocalEntityDidNotChange(entity))
                 .Select(updated => MarkedAsUnsyncable.Transition(CopyFrom(updated.Entity)));
 
-        private IObservable<ITransition> enterRetryLoop(TModel entity)
-            => Observable.Return(EnterRetryLoop.Transition(entity));
+        private IObservable<ITransition> enterRetryLoop((Exception Reason, TModel Entity) failedPush)
+            => failedPush.Reason is InternalServerErrorException
+                ? Observable.Return(SlowRetry.Transition((failedPush.Entity, 0)))
+                : Observable.Return(FastRetry.Transition((failedPush.Entity, 0)));
 
         private Func<TModel, TModel, ConflictResolutionMode> overwriteIfLocalEntityDidNotChange(TModel local)
             => (currentLocal, _) => HasChanged(local, currentLocal)

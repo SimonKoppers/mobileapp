@@ -52,8 +52,22 @@ namespace Toggl.Foundation.Tests.Sync.States
             => helper.TheOnlyThingThatChangesInTheUnsyncableEntityIsTheSyncStatusAndLastSyncErrorMessage();
 
         [Fact]
-        public void TheRetryLoopIsEnteredWhenTheReasonIsAServerErrorException()
-            => helper.TheRetryLoopIsEnteredWhenTheReasonIsAServerErrorException();
+        public void TheSlowRetryIsEnteredWhenTheReasonIsAnInternalServerErrorException()
+            => helper.TheSlowRetryIsEnteredWhenTheReasonIsAnInternalServerErrorException();
+
+        [Theory]
+        [MemberData(nameof(ServerExceptions))]
+        public void TheSlowRetryIsEnteredWhenTheReasonIsAServerErrorExceptionOtherThanInternalServerErrorException(ServerErrorException reason)
+            => helper.TheSlowRetryIsEnteredWhenTheReasonIsAServerErrorExceptionOtherThanInternalServerErrorException(reason);
+
+        public static object[] ServerExceptions()
+            => new[]
+            {
+                new object[] { new BadGatewayException() },
+                new object[] { new GatewayTimeoutException() },
+                new object[] { new HttpVersionNotSupportedException() },
+                new object[] { new ServiceUnavailableException() }
+            };
 
         public interface IStartMethodTestHelper
         {
@@ -64,7 +78,8 @@ namespace Toggl.Foundation.Tests.Sync.States
             void ThrowsWhenTheReasonExceptionIsNotAnApiException();
             void TheUpdatedEntityHasTheSameIdAsTheOriginalEntity();
             void TheOnlyThingThatChangesInTheUnsyncableEntityIsTheSyncStatusAndLastSyncErrorMessage();
-            void TheRetryLoopIsEnteredWhenTheReasonIsAServerErrorException();
+            void TheSlowRetryIsEnteredWhenTheReasonIsAnInternalServerErrorException();
+            void TheSlowRetryIsEnteredWhenTheReasonIsAServerErrorExceptionOtherThanInternalServerErrorException(ServerErrorException reason);
         }
 
         internal abstract class TheStartMethod<TModel> : IStartMethodTestHelper
@@ -168,17 +183,31 @@ namespace Toggl.Foundation.Tests.Sync.States
                         .Excluding(x => x.SyncStatus));
             }
 
-            public void TheRetryLoopIsEnteredWhenTheReasonIsAServerErrorException()
+            public void TheSlowRetryIsEnteredWhenTheReasonIsAnInternalServerErrorException()
             {
                 var entity = CreateDirtyEntity();
                 var reason = new InternalServerErrorException();
                 var state = CreateState(repository);
 
                 var transition = state.Start((reason, entity)).Wait();
-                var parameter = ((Transition<TModel>)transition).Parameter;
+                var parameter = ((Transition<(TModel Entity, double LastWaitingTime)>)transition).Parameter;
 
-                transition.Result.Should().Be(state.EnterRetryLoop);
-                parameter.Should().Be(entity);
+                transition.Result.Should().Be(state.SlowRetry);
+                parameter.Entity.Should().Be(entity);
+                parameter.LastWaitingTime.Should().Be(0);
+            }
+
+            public void TheSlowRetryIsEnteredWhenTheReasonIsAServerErrorExceptionOtherThanInternalServerErrorException(ServerErrorException reason)
+            {
+                var entity = CreateDirtyEntity();
+                var state = CreateState(repository);
+
+                var transition = state.Start((reason, entity)).Wait();
+                var parameter = ((Transition<(TModel Entity, double LastWaitingTime)>)transition).Parameter;
+
+                transition.Result.Should().Be(state.FastRetry);
+                parameter.Entity.Should().Be(entity);
+                parameter.LastWaitingTime.Should().Be(0);
             }
 
             private void prepareBatchUpdate(TModel entity)
