@@ -22,6 +22,13 @@ namespace Toggl.PrimeRadiant.Realm
         IEnumerable<(ConflictResolutionMode ResolutionMode, TModel Entity)> BatchUpdate(
             IEnumerable<(long Id, TModel Entity)> batch,
             Func<TModel, TModel, ConflictResolutionMode> conflictResolution);
+
+        IEnumerable<(ConflictResolutionMode ResolutionMode, TModel Entity)> BatchUpdate(
+            IEnumerable<(long Id, TModel Entity)> batch,
+            Func<TModel, TModel, ConflictResolutionMode> conflictResolution,
+            Func<TModel, bool> canHaveRival,
+            Func<TModel, Expression<Func<TModel, bool>>> areRivals,
+            Func<TModel, TModel, (TModel FixedEntity, TModel FixedRival)> fixRivals);
     }
 
     internal sealed class RealmAdapter<TRealmEntity, TModel> : IRealmAdapter<TModel>
@@ -63,6 +70,14 @@ namespace Toggl.PrimeRadiant.Realm
         public IEnumerable<(ConflictResolutionMode ResolutionMode, TModel Entity)> BatchUpdate(
             IEnumerable<(long Id, TModel Entity)> batch,
             Func<TModel, TModel, ConflictResolutionMode> conflictResolution)
+            => BatchUpdate(batch, conflictResolution, null, null, null);
+
+        public IEnumerable<(ConflictResolutionMode ResolutionMode, TModel Entity)> BatchUpdate(
+            IEnumerable<(long Id, TModel Entity)> batch,
+            Func<TModel, TModel, ConflictResolutionMode> conflictResolution,
+            Func<TModel, bool> canHaveRival,
+            Func<TModel, Expression<Func<TModel, bool>>> areRivals,
+            Func<TModel, TModel, (TModel FixedEntity, TModel FixedRival)> fixRivals)
         {
             Ensure.Argument.IsNotNull(batch, nameof(batch));
             Ensure.Argument.IsNotNull(matchEntity, nameof(matchEntity));
@@ -77,6 +92,16 @@ namespace Toggl.PrimeRadiant.Realm
                     var oldEntity = realmEntities.SingleOrDefault(matchEntity(updated.Id));
                     var resolveMode = conflictResolution(oldEntity, updated.Entity);
                     var resolvedEntity = resolveEntity(realm, oldEntity, updated.Entity, resolveMode);
+
+                    if (canHaveRival != null &&
+                        areRivals != null &&
+                        fixRivals != null &&
+                        (resolveMode == ConflictResolutionMode.Create || resolveMode == ConflictResolutionMode.Update) &&
+                        canHaveRival(resolvedEntity))
+                    {
+                        resolvePotentialRivals(realm, resolvedEntity, areRivals, fixRivals);
+                    }
+
                     return (resolveMode, (TModel)resolvedEntity);
                 }).ToList();
                 transaction.Commit();
@@ -132,6 +157,21 @@ namespace Toggl.PrimeRadiant.Realm
 
                 default:
                     throw new ArgumentException($"Unknown conflict resolution mode {resolveMode}");
+            }
+        }
+
+        private void resolvePotentialRivals(
+            Realms.Realm realm,
+            TRealmEntity entity,
+            Func<TModel, Expression<Func<TModel, bool>>> areRivals,
+            Func<TModel, TModel, (TModel FixedEntity, TModel FixedRival)> fixRivals)
+        {
+            var rival = (TRealmEntity)realm.All<TRealmEntity>().SingleOrDefault(areRivals(entity));
+            if (rival != null)
+            {
+                (TModel fixedEntity, TModel fixedRival) = fixRivals(entity, rival);
+                entity.SetPropertiesFrom(fixedEntity, realm);
+                rival.SetPropertiesFrom(fixedRival, realm);
             }
         }
     }
