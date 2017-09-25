@@ -12,11 +12,13 @@ namespace Toggl.Foundation.Sync.States.Push
 
         private ITogglApi api;
         private IScheduler scheduler;
+        private Random rnd;
 
-        public BaseRetryPushState(ITogglApi api, IScheduler scheduler)
+        public BaseRetryPushState(ITogglApi api, IScheduler scheduler, Random rnd)
         {
             this.api = api;
             this.scheduler = scheduler;
+            this.rnd = rnd;
         }
 
         public IObservable<ITransition> Start((TModel Entity, double LastWaitingTime) failedPush)
@@ -27,7 +29,7 @@ namespace Toggl.Foundation.Sync.States.Push
 
         private IObservable<ITransition> retry((TModel Entity, double LastWaitingTime) failedPush)
         {
-            var timeToWait = Math.Min(TimeSpan.MaxValue.TotalSeconds, NextWaitingTime(failedPush.LastWaitingTime));
+            var timeToWait = Math.Min(TimeSpan.MaxValue.TotalSeconds, nextWaitingTime(failedPush.LastWaitingTime));
             return Observable.Return(ServerIsUnavailable.Transition((failedPush.Entity, timeToWait)))
                 .Delay(TimeSpan.FromSeconds(timeToWait), scheduler);
         }
@@ -35,6 +37,19 @@ namespace Toggl.Foundation.Sync.States.Push
         private IObservable<ITransition> proceed(TModel entity)
             => Observable.Return(ServerIsAvailable.Transition(entity));
 
-        protected abstract double NextWaitingTime(double lastWaitingTime);
+        private double nextWaitingTime(double lastWaitingTime)
+        {
+            if (lastWaitingTime <= 0)
+                return FirstWaitingTime;
+
+            var factor = rnd.NextDouble() * (MaximumFactor - MinimumFactor) + MinimumFactor;
+            return lastWaitingTime * factor;
+        }
+
+        protected abstract double FirstWaitingTime { get; }
+
+        protected abstract double MinimumFactor { get; }
+
+        protected abstract double MaximumFactor { get; }
     }
 }

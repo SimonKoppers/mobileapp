@@ -6,22 +6,13 @@ namespace Toggl.Foundation.Sync.States.Push
 {
     public sealed class FastRetryPushState<TModel> : BaseRetryPushState<TModel>
     {
-        private const double initialWaitingTime = 10;
-        private readonly Random rnd;
-
         public FastRetryPushState(ITogglApi api, IScheduler scheduler, Random rnd)
-            : base(api, scheduler)
+            : base(api, scheduler, rnd)
         {
-            this.rnd = rnd;
         }
 
-        protected override double NextWaitingTime(double lastWaitingTime)
-        {
-            if (lastWaitingTime <= 0)
-                return initialWaitingTime;
-
-            var factor = rnd.NextDouble() / 2 + 1;
-            return lastWaitingTime * factor;
-        }
+        protected override double FirstWaitingTime => 10;
+        protected override double MinimumFactor => 1;
+        protected override double MaximumFactor => 1.5;
     }
 }
