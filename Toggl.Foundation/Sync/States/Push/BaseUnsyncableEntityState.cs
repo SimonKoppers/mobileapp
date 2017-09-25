@@ -13,6 +13,7 @@ namespace Toggl.Foundation.Tests.Sync.States
         private IRepository<TModel> repository;
 
         public StateResult<TModel> MarkedAsUnsyncable { get; } = new StateResult<TModel>();
+        public StateResult<TModel> EnterRetryLoop { get; } = new StateResult<TModel>();
 
         public BaseUnsyncableEntityState(IRepository<TModel> repository)
         {
@@ -23,7 +24,9 @@ namespace Toggl.Foundation.Tests.Sync.States
             => failedPush.Reason == null || failedPush.Entity == null
                 ? failBecauseOfNullArguments(failedPush)
                 : failedPush.Reason is ApiException
-                    ? markAsUnsyncable(failedPush.Entity, failedPush.Reason.Message)
+                    ? failedPush.Reason is ServerErrorException
+                        ? enterRetryLoop(failedPush.Entity)
+                        : markAsUnsyncable(failedPush.Entity, failedPush.Reason.Message)
                     : failBecauseOfUnexpectedError(failedPush.Reason);
 
         private IObservable<ITransition> failBecauseOfNullArguments((Exception Reason, TModel Entity) failedPush)
@@ -39,7 +42,10 @@ namespace Toggl.Foundation.Tests.Sync.States
             => repository
                 .UpdateWithConflictResolution(entity.Id, CreateUnsyncableFrom(entity, reason), overwriteIfLocalEntityDidNotChange(entity))
                 .Select(updated => MarkedAsUnsyncable.Transition(CopyFrom(updated.Entity)));
-        
+
+        private IObservable<ITransition> enterRetryLoop(TModel entity)
+            => Observable.Return(EnterRetryLoop.Transition(entity));
+
         private Func<TModel, TModel, ConflictResolutionMode> overwriteIfLocalEntityDidNotChange(TModel local)
             => (currentLocal, _) => HasChanged(local, currentLocal)
                 ? ConflictResolutionMode.Ignore
