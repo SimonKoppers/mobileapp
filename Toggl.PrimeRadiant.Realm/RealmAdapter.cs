@@ -21,14 +21,8 @@ namespace Toggl.PrimeRadiant.Realm
 
         IEnumerable<(ConflictResolutionMode ResolutionMode, TModel Entity)> BatchUpdate(
             IEnumerable<(long Id, TModel Entity)> batch,
-            Func<TModel, TModel, ConflictResolutionMode> conflictResolution);
-
-        IEnumerable<(ConflictResolutionMode ResolutionMode, TModel Entity)> BatchUpdate(
-            IEnumerable<(long Id, TModel Entity)> batch,
             Func<TModel, TModel, ConflictResolutionMode> conflictResolution,
-            Func<TModel, bool> canHaveRival,
-            Func<TModel, Expression<Func<TModel, bool>>> areRivals,
-            Func<TModel, TModel, (TModel FixedEntity, TModel FixedRival)> fixRivals);
+            IRivalsResolver<TModel> rivalsResolver);
     }
 
     internal sealed class RealmAdapter<TRealmEntity, TModel> : IRealmAdapter<TModel>
@@ -69,15 +63,8 @@ namespace Toggl.PrimeRadiant.Realm
 
         public IEnumerable<(ConflictResolutionMode ResolutionMode, TModel Entity)> BatchUpdate(
             IEnumerable<(long Id, TModel Entity)> batch,
-            Func<TModel, TModel, ConflictResolutionMode> conflictResolution)
-            => BatchUpdate(batch, conflictResolution, null, null, null);
-
-        public IEnumerable<(ConflictResolutionMode ResolutionMode, TModel Entity)> BatchUpdate(
-            IEnumerable<(long Id, TModel Entity)> batch,
             Func<TModel, TModel, ConflictResolutionMode> conflictResolution,
-            Func<TModel, bool> canHaveRival,
-            Func<TModel, Expression<Func<TModel, bool>>> areRivals,
-            Func<TModel, TModel, (TModel FixedEntity, TModel FixedRival)> fixRivals)
+            IRivalsResolver<TModel> rivalsResolver)
         {
             Ensure.Argument.IsNotNull(batch, nameof(batch));
             Ensure.Argument.IsNotNull(matchEntity, nameof(matchEntity));
@@ -94,9 +81,9 @@ namespace Toggl.PrimeRadiant.Realm
                     var resolveMode = conflictResolution(oldEntity, updated.Entity);
                     var resolvedEntity = resolveEntity(realm, oldEntity, updated.Entity, resolveMode);
 
-                    if (canHaveRival != null &&
+                    if (rivalsResolver != null &&
                         (resolveMode == ConflictResolutionMode.Create || resolveMode == ConflictResolutionMode.Update) &&
-                        canHaveRival(resolvedEntity))
+                        rivalsResolver.CanHaveRival(resolvedEntity))
                     {
                         maybeHaveRivals.Add(resolvedEntity);
                     }
@@ -104,10 +91,9 @@ namespace Toggl.PrimeRadiant.Realm
                     return (resolveMode, (TModel)resolvedEntity);
                 }).ToList();
 
-                if (areRivals != null && fixRivals != null)
+                foreach (var maybeHasRival in maybeHaveRivals)
                 {
-                    foreach (var maybeHasRival in maybeHaveRivals)
-                        resolvePotentialRivals(realm, maybeHasRival, areRivals, fixRivals);
+                    resolvePotentialRivals(realm, maybeHasRival, rivalsResolver);
                 }
 
                 transaction.Commit();
@@ -169,13 +155,12 @@ namespace Toggl.PrimeRadiant.Realm
         private void resolvePotentialRivals(
             Realms.Realm realm,
             TRealmEntity entity,
-            Func<TModel, Expression<Func<TModel, bool>>> areRivals,
-            Func<TModel, TModel, (TModel FixedEntity, TModel FixedRival)> fixRivals)
+            IRivalsResolver<TModel> resolver)
         {
-            var rival = (TRealmEntity)realm.All<TRealmEntity>().SingleOrDefault(areRivals(entity));
+            var rival = (TRealmEntity)realm.All<TRealmEntity>().SingleOrDefault(resolver.AreRivals(entity));
             if (rival != null)
             {
-                (TModel fixedEntity, TModel fixedRival) = fixRivals(entity, rival);
+                (TModel fixedEntity, TModel fixedRival) = resolver.FixRivals(entity, rival, realm.All<TRealmEntity>());
                 entity.SetPropertiesFrom(fixedEntity, realm);
                 rival.SetPropertiesFrom(fixedRival, realm);
             }

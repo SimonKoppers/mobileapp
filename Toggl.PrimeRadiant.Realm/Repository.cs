@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reactive.Linq;
 using Realms;
@@ -25,25 +26,13 @@ namespace Toggl.PrimeRadiant.Realm
         
         public IObservable<IEnumerable<(ConflictResolutionMode ResolutionMode, TModel Entity)>> BatchUpdate(
             IEnumerable<(long Id, TModel Entity)> entities,
-            Func<TModel, TModel, ConflictResolutionMode> conflictResolution)
-        {
-            Ensure.Argument.IsNotNull(entities, nameof(entities));
-            Ensure.Argument.IsNotNull(conflictResolution, nameof(conflictResolution));
-
-            return CreateObservable(() => Adapter.BatchUpdate(entities, conflictResolution));
-        }
-
-        public IObservable<IEnumerable<(ConflictResolutionMode ResolutionMode, TModel Entity)>> BatchUpdate(
-            IEnumerable<(long Id, TModel Entity)> entities,
             Func<TModel, TModel, ConflictResolutionMode> conflictResolution,
-            Func<TModel, bool> canHaveRival,
-            Func<TModel, Expression<Func<TModel, bool>>> areRivals,
-            Func<TModel, TModel, (TModel FixedEntity, TModel FixedRival)> fixRivals)
+            IRivalsResolver<TModel> rivalsResolver = null)
         {
             Ensure.Argument.IsNotNull(entities, nameof(entities));
             Ensure.Argument.IsNotNull(conflictResolution, nameof(conflictResolution));
 
-            return CreateObservable(() => Adapter.BatchUpdate(entities, conflictResolution, canHaveRival, areRivals, fixRivals));
+            return CreateObservable(() => Adapter.BatchUpdate(entities, conflictResolution, rivalsResolver));
         }
 
         public IObservable<TModel> GetById(long id)

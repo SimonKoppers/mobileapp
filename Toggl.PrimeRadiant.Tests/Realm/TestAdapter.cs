@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using Toggl.PrimeRadiant.Realm;
 
 namespace Toggl.PrimeRadiant.Tests.Realm
@@ -49,17 +48,8 @@ namespace Toggl.PrimeRadiant.Tests.Realm
 
         public IEnumerable<(ConflictResolutionMode ResolutionMode, TestModel Entity)> BatchUpdate(
             IEnumerable<(long Id, TestModel Entity)> entities,
-            Func<TestModel, TestModel, ConflictResolutionMode> conflictResolution)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<(ConflictResolutionMode ResolutionMode, TestModel Entity)> BatchUpdate(
-            IEnumerable<(long Id, TestModel Entity)> batch,
             Func<TestModel, TestModel, ConflictResolutionMode> conflictResolution,
-            Func<TestModel, bool> canHaveRival,
-            Func<TestModel, Expression<Func<TestModel, bool>>> areRivals,
-            Func<TestModel, TestModel, (TestModel FixedEntity, TestModel FixedRival)> fixRivals)
+            IRivalsResolver<TestModel> resolver)
         {
             throw new NotImplementedException();
         }
