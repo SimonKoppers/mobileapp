@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Linq.Expressions;
 using Toggl.Foundation.Models;
+using Toggl.PrimeRadiant;
 using Toggl.PrimeRadiant.Models;
 
 namespace Toggl.Foundation.Sync.ConflictResolution

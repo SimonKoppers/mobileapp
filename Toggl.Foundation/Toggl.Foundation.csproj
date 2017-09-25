@@ -59,7 +59,6 @@
     <Compile Include="Login\LoginManager.cs" />
     <Compile Include="Sync\ConflictResolution\AlwaysOverwrite.cs" />
     <Compile Include="Sync\ConflictResolution\IConflictResolver.cs" />
-    <Compile Include="Sync\ConflictResolution\IRivalsResolver.cs" />
     <Compile Include="Sync\ConflictResolution\Selectors\ClientSyncSelector.cs" />
     <Compile Include="Sync\ConflictResolution\Selectors\ISyncSelector.cs" />
     <Compile Include="Sync\ConflictResolution\Selectors\ProjectSyncSelector.cs" />

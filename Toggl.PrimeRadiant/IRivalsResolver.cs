@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace Toggl.Foundation.Sync.ConflictResolution
+namespace Toggl.PrimeRadiant
 {
     public interface IRivalsResolver<TModel>
     {
