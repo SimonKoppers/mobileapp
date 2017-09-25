@@ -208,7 +208,10 @@
     <Compile Include="Sync\StateMachineTests.cs" />
     <Compile Include="Sync\States\Pull\PersistTasksStateTests.cs" />
     <Compile Include="Sync\States\Pull\PersistWorkspaceFeaturesStateTests.cs" />
+    <Compile Include="Sync\States\Push\BaseRetryPushStateTests.cs" />
     <Compile Include="Sync\States\Push\BaseUnsyncableEntityStateTests.cs" />
+    <Compile Include="Sync\States\Push\FastRetryPushStateTests.cs" />
+    <Compile Include="Sync\States\Push\SlowRetryPushStateTests.cs" />
     <Compile Include="Sync\States\Push\UnsyncableTimeEntryStateTests.cs" />
     <Compile Include="Sync\States\Push\BaseUpdateEntityStateTests.cs" />
     <Compile Include="Sync\States\Push\UpdateTimeEntryStateTests.cs" />
