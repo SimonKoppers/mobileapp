@@ -59,12 +59,14 @@
     <Compile Include="Login\LoginManager.cs" />
     <Compile Include="Sync\ConflictResolution\AlwaysOverwrite.cs" />
     <Compile Include="Sync\ConflictResolution\IConflictResolver.cs" />
+    <Compile Include="Sync\ConflictResolution\IRivalsResolver.cs" />
     <Compile Include="Sync\ConflictResolution\Selectors\ClientSyncSelector.cs" />
     <Compile Include="Sync\ConflictResolution\Selectors\ISyncSelector.cs" />
     <Compile Include="Sync\ConflictResolution\Selectors\ProjectSyncSelector.cs" />
     <Compile Include="Sync\ConflictResolution\Selectors\TagSyncSelector.cs" />
     <Compile Include="Sync\ConflictResolution\Selectors\TaskSyncSelector.cs" />
     <Compile Include="Sync\ConflictResolution\Selectors\WorkspaceSyncSelector.cs" />
+    <Compile Include="Sync\ConflictResolution\TimeEntryRivalsResolver.cs" />
     <Compile Include="Sync\IStateMachineOrchestrator.cs" />
     <Compile Include="Sync\ISyncManager.cs" />
     <Compile Include="Sync\ISyncStateQueue.cs" />
