@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reactive.Subjects;
 using Toggl.Foundation.Models;
 using Toggl.Multivac;
@@ -126,10 +125,9 @@ namespace Toggl.Foundation.DataSources
             IRivalsResolver<IDatabaseTimeEntry> rivalsResolver = null)
             => repository
                 .BatchUpdate(entities, conflictResolution, rivalsResolver)
-                .Do(updatedEntities =>
-                    updatedEntities
-                        .Where(tuple => tuple.ResolutionMode != ConflictResolutionMode.Ignore)
-                        .ForEach(handleBatchUpdateTuple));
+                .Do(updatedEntities => updatedEntities
+                    .Where(tuple => tuple.ResolutionMode != ConflictResolutionMode.Ignore)
+                    .ForEach(handleBatchUpdateTuple));
 
         private void handleBatchUpdateTuple((ConflictResolutionMode ResolutionMode, IDatabaseTimeEntry Entity) tuple)
         {
