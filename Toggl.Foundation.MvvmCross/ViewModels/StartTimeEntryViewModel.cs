@@ -27,6 +27,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private readonly Subject<TextFieldInfo> infoSubject = new Subject<TextFieldInfo>();
         private readonly Subject<AutocompleteSuggestionType> queryByTypeSubject = new Subject<AutocompleteSuggestionType>();
 
+        private long? lastProjectId;
         private IDisposable queryDisposable;
         private IDisposable elapsedTimeDisposable;
 
@@ -35,15 +36,17 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public bool IsEditingStartDate { get; private set; }
 
-        public bool IsSuggestingTags { get; set; }
+        public bool IsSuggestingTags { get; private set; }
 
-        public bool IsSuggestingProjects { get; set; }
+        public bool IsSuggestingProjects { get; private set; }
 
         public TextFieldInfo TextFieldInfo { get; set; } = TextFieldInfo.Empty;
 
         public TimeSpan ElapsedTime { get; private set; } = TimeSpan.Zero;
 
         public bool IsBillable { get; private set; } = false;
+
+        public bool IsBillableAvailable { get; private set; } = false;
 
         public bool IsEditingProjects { get; private set; } = false;
 
@@ -61,18 +64,18 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         public IMvxAsyncCommand DoneCommand { get; }
 
         public IMvxAsyncCommand ChangeDurationCommand { get; }
-        
+
         public IMvxAsyncCommand ChangeStartTimeCommand { get; }
 
         public IMvxCommand ToggleBillableCommand { get; }
-        
+
         public IMvxCommand ToggleTagSuggestionsCommand { get; }
 
         public IMvxCommand ToggleProjectSuggestionsCommand { get; }
 
         public IMvxCommand<AutocompleteSuggestion> SelectSuggestionCommand { get; }
 
-        public StartTimeEntryViewModel(ITogglDataSource dataSource, ITimeService timeService, 
+        public StartTimeEntryViewModel(ITogglDataSource dataSource, ITimeService timeService,
             IMvxNavigationService navigationService)
         {
             Ensure.Argument.IsNotNull(dataSource, nameof(dataSource));
@@ -122,12 +125,12 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                     break;
 
                 case ProjectSuggestion projectSuggestion:
-                    
+
                     TextFieldInfo = TextFieldInfo
                         .RemoveProjectQueryFromDescriptionIfNeeded()
                         .WithProjectInfo(
                             projectSuggestion.ProjectId,
-                            projectSuggestion.ProjectName, 
+                            projectSuggestion.ProjectName,
                             projectSuggestion.ProjectColor);
                     break;
 
@@ -147,22 +150,33 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             elapsedTimeDisposable =
                 timeService.CurrentDateTimeObservable.Subscribe(currentTime => ElapsedTime = currentTime - StartTime);
 
-            var queryByTypeObservable = 
+            var queryByTypeObservable =
                 queryByTypeSubject
                     .AsObservable()
                     .SelectMany(type => dataSource.AutocompleteProvider.Query("", type));
 
-            queryDisposable = 
-                Observable.Return(TextFieldInfo).StartWith()
-                    .Merge(infoSubject.AsObservable())
+            queryDisposable =
+                infoSubject.AsObservable()
+                    .StartWith(TextFieldInfo)
                     .SelectMany(dataSource.AutocompleteProvider.Query)
                     .Merge(queryByTypeObservable)
                     .Subscribe(onSuggestions);
         }
 
-        private void OnTextFieldInfoChanged()
+        public async override Task Initialize()
+        {
+            await base.Initialize();
+
+            await ensureBillableAvailability(0);
+        }
+
+        private async void OnTextFieldInfoChanged()
         {
             infoSubject.OnNext(TextFieldInfo);
+
+            if (TextFieldInfo.ProjectId == lastProjectId) return;
+            lastProjectId = TextFieldInfo.ProjectId;
+            await ensureBillableAvailability(lastProjectId ?? 0);
         }
 
         private void toggleTagSuggestions()
@@ -175,7 +189,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
             var newText = TextFieldInfo.Text.Insert(TextFieldInfo.CursorPosition, QuerySymbols.TagsString);
             TextFieldInfo = TextFieldInfo.WithTextAndCursor(newText, TextFieldInfo.CursorPosition + 1);
-        }   
+        }
 
         private void toggleProjectSuggestions()
         {
@@ -253,6 +267,24 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
             Suggestions.Clear();
             Suggestions.AddRange(suggestions.Distinct(AutocompleteSuggestionComparer.Instance));
+        }
+
+        private async Task ensureBillableAvailability(long projectId)
+        {
+            var workspaceObservable = projectId == 0 
+                ? dataSource.Workspaces.GetDefault().Select(ws => (Workspace: ws, DefaultToBillable: false))
+                : dataSource.Projects.GetById(projectId)
+                    .SelectMany(project => 
+                        dataSource.Workspaces
+                            .GetById(project.WorkspaceId)
+                            .Select(ws => (Workspace: ws, DefaultToBillable: project.Billable ?? false)));
+           
+            (IsBillableAvailable, IsBillable) =
+                await workspaceObservable
+                    .SelectMany(tuple =>
+                        dataSource.Workspaces
+                            .WorkspaceHasFeature(tuple.Workspace.Id, WorkspaceFeatureId.Pro)
+                            .Select(isAvailable => (IsBillableAvailable: isAvailable, IsBillable: tuple.DefaultToBillable)));
         }
     }
 }
