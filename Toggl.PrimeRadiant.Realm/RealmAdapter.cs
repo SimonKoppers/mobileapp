@@ -74,7 +74,7 @@ namespace Toggl.PrimeRadiant.Realm
             using (var transaction = realm.BeginWrite())
             {
                 var realmEntities = realm.All<TRealmEntity>();
-                var maybeHaveRivals = new List<TRealmEntity>();
+                var entitiesWithPotentialRivals = new List<TRealmEntity>();
                 var resolvedEntities = batch.Select(updated =>
                 {
                     var oldEntity = realmEntities.SingleOrDefault(matchEntity(updated.Id));
@@ -85,13 +85,13 @@ namespace Toggl.PrimeRadiant.Realm
                         (resolveMode == ConflictResolutionMode.Create || resolveMode == ConflictResolutionMode.Update) &&
                         rivalsResolver.CanHaveRival(resolvedEntity))
                     {
-                        maybeHaveRivals.Add(resolvedEntity);
+                        entitiesWithPotentialRivals.Add(resolvedEntity);
                     }
 
                     return (resolveMode, (TModel)resolvedEntity);
                 }).ToList();
 
-                foreach (var maybeHasRival in maybeHaveRivals)
+                foreach (var maybeHasRival in entitiesWithPotentialRivals)
                 {
                     resolvePotentialRivals(realm, maybeHasRival, rivalsResolver);
                 }
