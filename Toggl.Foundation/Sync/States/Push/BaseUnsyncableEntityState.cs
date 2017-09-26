@@ -27,7 +27,7 @@ namespace Toggl.Foundation.Tests.Sync.States
                 ? failBecauseOfNullArguments(failedPush)
                 : failedPush.Reason is ApiException
                     ? failedPush.Reason is ServerErrorException
-                        ? enterRetryLoop(failedPush)
+                        ? enterRetryLoop()
                         : markAsUnsyncable(failedPush.Entity, failedPush.Reason.Message)
                     : failBecauseOfUnexpectedError(failedPush.Reason);
 
@@ -46,7 +46,7 @@ namespace Toggl.Foundation.Tests.Sync.States
                 .Do(_ => delay.Reset())
                 .Select(updated => MarkedAsUnsyncable.Transition(CopyFrom(updated.Entity)));
 
-        private IObservable<ITransition> enterRetryLoop((Exception Reason, TModel Entity) failedPush)
+        private IObservable<ITransition> enterRetryLoop()
             => Observable.Return(CheckServerStatus.Transition());
 
         private Func<TModel, TModel, ConflictResolutionMode> overwriteIfLocalEntityDidNotChange(TModel local)
