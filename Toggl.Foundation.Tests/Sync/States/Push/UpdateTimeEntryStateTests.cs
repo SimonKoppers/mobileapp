@@ -1,6 +1,7 @@
 ﻿using System;
 using NSubstitute;
 using Toggl.Foundation.Models;
+using Toggl.Foundation.Sync;
 using Toggl.Foundation.Sync.States;
 using Toggl.Multivac.Models;
 using Toggl.PrimeRadiant;
@@ -19,7 +20,7 @@ namespace Toggl.Foundation.Tests.Sync.States
         private sealed class TheStartMethod : TheStartMethod<IDatabaseTimeEntry, ITimeEntry>
         {
             protected override BaseUpdateEntityState<IDatabaseTimeEntry> CreateState(ITogglApi api, IRepository<IDatabaseTimeEntry> repository)
-                => new UpdateTimeEntryState(api, repository);
+                => new UpdateTimeEntryState(api, repository, Substitute.For<IRetryDelayService>());
 
             protected override Func<IDatabaseTimeEntry, IObservable<ITimeEntry>> GetUpdateFunction(ITogglApi api)
                 => api.TimeEntries.Update;

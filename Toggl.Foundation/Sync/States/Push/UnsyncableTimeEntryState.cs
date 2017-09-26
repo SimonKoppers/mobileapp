@@ -1,4 +1,5 @@
 ﻿using Toggl.Foundation.Models;
+using Toggl.Foundation.Sync;
 using Toggl.PrimeRadiant;
 using Toggl.PrimeRadiant.Models;
 
@@ -6,7 +7,7 @@ namespace Toggl.Foundation.Tests.Sync.States
 {
     internal sealed class UnsyncableTimeEntryState : BaseUnsyncableEntityState<IDatabaseTimeEntry>
     {
-        public UnsyncableTimeEntryState(IRepository<IDatabaseTimeEntry> repository) : base(repository)
+        public UnsyncableTimeEntryState(IRepository<IDatabaseTimeEntry> repository, IRetryDelayService delay) : base(repository, delay)
         {
         }
 

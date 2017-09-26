@@ -9,7 +9,7 @@ namespace Toggl.Foundation.Sync.States
 {
     internal sealed class CreateTimeEntryState : BaseCreateEntityState<IDatabaseTimeEntry>
     {
-        public CreateTimeEntryState(ITogglApi api, IRepository<IDatabaseTimeEntry> repository) : base(api, repository)
+        public CreateTimeEntryState(ITogglApi api, IRepository<IDatabaseTimeEntry> repository, IRetryDelayService delay) : base(api, repository, delay)
         {
         }
 

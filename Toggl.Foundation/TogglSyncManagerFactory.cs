@@ -86,14 +86,13 @@ namespace Toggl.Foundation
             IScheduler scheduler,
             StateResult entryPoint)
         {
-            var push = new PushTimeEntriesState(database);
-            var pushOne = new PushOneEntityState<IDatabaseTimeEntry>();
-            var create = new CreateTimeEntryState(api, dataSource.TimeEntries);
-            var update = new UpdateTimeEntryState(api, dataSource.TimeEntries);
-            var unsyncable = new UnsyncableTimeEntryState(dataSource.TimeEntries);
-
             var rnd = new Random();
             var delay = new RetryDelayService(rnd);
+            var push = new PushTimeEntriesState(database);
+            var pushOne = new PushOneEntityState<IDatabaseTimeEntry>();
+            var create = new CreateTimeEntryState(api, dataSource.TimeEntries, delay);
+            var update = new UpdateTimeEntryState(api, dataSource.TimeEntries, delay);
+            var unsyncable = new UnsyncableTimeEntryState(dataSource.TimeEntries, delay);
             var checkServerStatus = new CheckServerStatusState(api, scheduler, delay);
 
             return configurePush(transitions, entryPoint, push, pushOne, create, update, unsyncable, checkServerStatus);

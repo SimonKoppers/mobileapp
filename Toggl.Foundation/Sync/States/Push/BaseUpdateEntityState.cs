@@ -11,20 +11,23 @@ namespace Toggl.Foundation.Sync.States
     {
         private readonly ITogglApi api;
         private readonly IRepository<TModel> repository;
+        private readonly IRetryDelayService delay;
 
         public StateResult<(Exception, TModel)> UpdatingFailed { get; } = new StateResult<(Exception, TModel)>();
         public StateResult<TModel> EntityChanged { get; } = new StateResult<TModel>();
         public StateResult<TModel> UpdatingSucceeded { get; } = new StateResult<TModel>();
 
-        public BaseUpdateEntityState(ITogglApi api, IRepository<TModel> repository)
+        public BaseUpdateEntityState(ITogglApi api, IRepository<TModel> repository, IRetryDelayService delay)
         {
             this.api = api;
             this.repository = repository;
+            this.delay = delay;
         }
 
         public IObservable<ITransition> Start(TModel entity)
             => update(entity)
                 .SelectMany(tryOverwrite(entity))
+                .Do(_ => delay.Reset())
                 .SelectMany(result => result.Mode == ConflictResolutionMode.Ignore
                     ? entityChanged(entity)
                     : succeeded(CopyFrom(result.UpdatedEntity)))

@@ -11,13 +11,15 @@ namespace Toggl.Foundation.Tests.Sync.States
         where TModel : IBaseModel, IDatabaseSyncable
     {
         private IRepository<TModel> repository;
+        private readonly IRetryDelayService delay;
 
         public StateResult<TModel> MarkedAsUnsyncable { get; } = new StateResult<TModel>();
         public StateResult CheckServerStatus { get; } = new StateResult();
 
-        public BaseUnsyncableEntityState(IRepository<TModel> repository)
+        public BaseUnsyncableEntityState(IRepository<TModel> repository, IRetryDelayService delay)
         {
             this.repository = repository;
+            this.delay = delay;
         }
 
         public IObservable<ITransition> Start((Exception Reason, TModel Entity) failedPush)
@@ -41,6 +43,7 @@ namespace Toggl.Foundation.Tests.Sync.States
         private IObservable<ITransition> markAsUnsyncable(TModel entity, string reason)
             => repository
                 .UpdateWithConflictResolution(entity.Id, CreateUnsyncableFrom(entity, reason), overwriteIfLocalEntityDidNotChange(entity))
+                .Do(_ => delay.Reset())
                 .Select(updated => MarkedAsUnsyncable.Transition(CopyFrom(updated.Entity)));
 
         private IObservable<ITransition> enterRetryLoop((Exception Reason, TModel Entity) failedPush)
