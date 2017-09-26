@@ -11,8 +11,8 @@ namespace Toggl.Foundation.Sync.States
 {
     class PersistTimeEntriesState : BasePersistState<ITimeEntry, IDatabaseTimeEntry>
     {
-        public PersistTimeEntriesState(IRepository<IDatabaseTimeEntry> repository, ISinceParameterRepository sinceParameterRepository)
-            : base(repository, sinceParameterRepository, Resolver.ForTimeEntries(), new TimeEntryRivalsResolver())
+        public PersistTimeEntriesState(IRepository<IDatabaseTimeEntry> repository, ISinceParameterRepository sinceParameterRepository, ITimeService timeService)
+            : base(repository, sinceParameterRepository, Resolver.ForTimeEntries(), new TimeEntryRivalsResolver(timeService))
         {
         }
 

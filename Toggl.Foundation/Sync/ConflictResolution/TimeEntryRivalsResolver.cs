@@ -9,6 +9,13 @@ namespace Toggl.Foundation.Sync.ConflictResolution
 {
     internal sealed class TimeEntryRivalsResolver : IRivalsResolver<IDatabaseTimeEntry>
     {
+        private ITimeService timeService;
+
+        public TimeEntryRivalsResolver(ITimeService timeService)
+        {
+            this.timeService = timeService;
+        }
+
         public bool CanHaveRival(IDatabaseTimeEntry entity) => !entity.Stop.HasValue;
 
         public Expression<Func<IDatabaseTimeEntry, bool>> AreRivals(IDatabaseTimeEntry entity)
@@ -22,7 +29,7 @@ namespace Toggl.Foundation.Sync.ConflictResolution
             var next = allTimeEntries
                 .OrderBy(te => te.Stop)
                 .FirstOrDefault(other => other.Stop > toBeStopped.Start);
-            var stop = next?.Start ?? DateTimeOffset.Now;
+            var stop = next?.Start ?? timeService.CurrentDateTime;
             return new TimeEntry(toBeStopped, stop);
         }
     }

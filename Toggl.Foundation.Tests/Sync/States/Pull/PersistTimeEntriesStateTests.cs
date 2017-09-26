@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
+using NSubstitute;
 using Toggl.Foundation.Models;
 using Toggl.Foundation.Sync.States;
 using Toggl.Multivac.Models;
@@ -21,9 +22,16 @@ namespace Toggl.Foundation.Tests.Sync.States
         private sealed class TheStartMethod
             : TheStartMethod<PersistTimeEntriesState, ITimeEntry, IDatabaseTimeEntry>
         {
-            protected override PersistTimeEntriesState CreateState(IRepository<IDatabaseTimeEntry> repository,
-                ISinceParameterRepository sinceParameterRepository)
-                => new PersistTimeEntriesState(repository, sinceParameterRepository);
+            private readonly ITimeService timeService;
+
+            public TheStartMethod()
+            {
+                timeService = Substitute.For<ITimeService>();
+                timeService.CurrentDateTime.Returns(_ => DateTimeOffset.Now);
+            }
+
+            protected override PersistTimeEntriesState CreateState(IRepository<IDatabaseTimeEntry> repository, ISinceParameterRepository sinceParameterRepository)
+                => new PersistTimeEntriesState(repository, sinceParameterRepository, timeService);
 
             protected override List<ITimeEntry> CreateListWithOneItem(DateTimeOffset? at = null)
                 => new List<ITimeEntry> { new TimeEntry { At = at ?? DateTimeOffset.Now, Description = Guid.NewGuid().ToString() } };
