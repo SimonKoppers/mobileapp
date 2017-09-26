@@ -6,7 +6,7 @@ namespace Toggl.Foundation.Sync
     {
         private readonly Random rnd;
 
-        private double lastDelay;
+        private double? lastDelay;
 
         private const double defaultFastDelay = 10;
 
@@ -28,12 +28,15 @@ namespace Toggl.Foundation.Sync
         public TimeSpan NextFastDelay()
             => nextDelay(randomFastFactor, defaultFastDelay);
 
-        public void Reset() => lastDelay = 0;
+        public void Reset() => lastDelay = null;
 
         private TimeSpan nextDelay(double factor, double defaultDelay)
         {
-            lastDelay = Math.Max(Math.Min(lastDelay * factor, TimeSpan.MaxValue.TotalSeconds), defaultDelay);
-            return TimeSpan.FromSeconds(lastDelay);
+            lastDelay = !lastDelay.HasValue
+                ? defaultDelay
+                : Math.Max(Math.Min(lastDelay.Value * factor, TimeSpan.MaxValue.TotalSeconds), 0);
+
+            return TimeSpan.FromSeconds(lastDelay.Value);
         }
 
         private double getRandomNumberBetween(double min, double max)
