@@ -85,10 +85,7 @@
     <Compile Include="Login\ILoginManager.cs" />
     <Compile Include="Sync\States\Pull\PersistTasksState.cs" />
     <Compile Include="Sync\States\Pull\PersistWorkspaceFeaturesState.cs" />
-    <Compile Include="Sync\States\Push\BaseRetryPushState.cs" />
     <Compile Include="Sync\States\Push\BaseUnsyncableEntityState.cs" />
-    <Compile Include="Sync\States\Push\FastRetryPushState.cs" />
-    <Compile Include="Sync\States\Push\SlowRetryPushState.cs" />
     <Compile Include="Sync\States\Push\UnsyncableTimeEntryState.cs" />
     <Compile Include="Sync\States\Pull\PersistTagsState.cs" />
     <Compile Include="Sync\TransitionHandlerProvider.cs" />
