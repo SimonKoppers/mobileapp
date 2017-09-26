@@ -12,6 +12,8 @@ namespace Toggl.Foundation.DataSources
 
         public WorkspacesDataSource(ITogglDatabase database)
         {
+            Ensure.Argument.IsNotNull(database, nameof(database));
+
             this.database = database;
         }
 
