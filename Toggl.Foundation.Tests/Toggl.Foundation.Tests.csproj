@@ -203,6 +203,7 @@
     <Compile Include="MvvmCross\ViewModels\TimeEntriesLogViewModelTests.cs" />
     <Compile Include="MvvmCross\ViewModels\OnboardingViewModelTests.cs" />
     <Compile Include="MvvmCross\Converters\TimeSpanToDurationValueConverterTests.cs" />
+    <Compile Include="Sync\ConflictResolution\TimeEntryRivalsResolverTests.cs" />
     <Compile Include="Sync\DeadlockTests.cs" />
     <Compile Include="Sync\StateMachineOrchestratorTests.cs" />
     <Compile Include="Sync\StateMachineTests.cs" />
