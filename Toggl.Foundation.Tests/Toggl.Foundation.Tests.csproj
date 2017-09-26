@@ -204,6 +204,7 @@
     <Compile Include="MvvmCross\ViewModels\OnboardingViewModelTests.cs" />
     <Compile Include="MvvmCross\Converters\TimeSpanToDurationValueConverterTests.cs" />
     <Compile Include="Sync\DeadlockTests.cs" />
+    <Compile Include="Sync\RetryDelayServiceTests.cs" />
     <Compile Include="Sync\StateMachineOrchestratorTests.cs" />
     <Compile Include="Sync\StateMachineTests.cs" />
     <Compile Include="Sync\States\Pull\PersistTasksStateTests.cs" />
