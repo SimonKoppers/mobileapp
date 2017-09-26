@@ -93,10 +93,10 @@ namespace Toggl.Foundation
             var unsyncable = new UnsyncableTimeEntryState(dataSource.TimeEntries);
 
             var rnd = new Random();
-            var fastRetry = new FastRetryPushState<IDatabaseTimeEntry>(api, scheduler, rnd);
-            var slowRetry = new SlowRetryPushState<IDatabaseTimeEntry>(api, scheduler, rnd);
+            var delay = new RetryDelayService(rnd);
+            var checkServerStatus = new CheckServerStatusState(api, scheduler, delay);
 
-            return configurePush(transitions, entryPoint, push, pushOne, create, update, unsyncable, fastRetry, slowRetry);
+            return configurePush(transitions, entryPoint, push, pushOne, create, update, unsyncable, checkServerStatus);
         }
 
         private static IStateResult configurePush<T>(
@@ -107,8 +107,7 @@ namespace Toggl.Foundation
             BaseCreateEntityState<T> create,
             BaseUpdateEntityState<T> update,
             BaseUnsyncableEntityState<T> markUnsyncable,
-            FastRetryPushState<T> fastRetry,
-            SlowRetryPushState<T> slowRetry)
+            CheckServerStatusState checkServerStatus)
             where T : class, IBaseModel, IDatabaseSyncable
         {
             transitions.ConfigureTransition(entryPoint, push.Start);
@@ -120,12 +119,9 @@ namespace Toggl.Foundation
             transitions.ConfigureTransition(update.UpdatingSucceeded, push.Start);
             transitions.ConfigureTransition(update.UpdatingFailed, markUnsyncable.Start);
 
-            transitions.ConfigureTransition(markUnsyncable.FastRetry, fastRetry.Start);
-            transitions.ConfigureTransition(markUnsyncable.SlowRetry, slowRetry.Start);
-            transitions.ConfigureTransition(fastRetry.ServerIsUnavailable, fastRetry.Start);
-            transitions.ConfigureTransition(slowRetry.ServerIsUnavailable, slowRetry.Start);
-            transitions.ConfigureTransition(fastRetry.ServerIsAvailable, pushOne.Start);
-            transitions.ConfigureTransition(slowRetry.ServerIsAvailable, pushOne.Start);
+            transitions.ConfigureTransition(markUnsyncable.CheckServerStatus, checkServerStatus.Start);
+            transitions.ConfigureTransition(checkServerStatus.Retry, checkServerStatus.Start);
+            transitions.ConfigureTransition(checkServerStatus.ServerIsAvailable, push.Start);
 
             return push.NothingToPush;
         }
