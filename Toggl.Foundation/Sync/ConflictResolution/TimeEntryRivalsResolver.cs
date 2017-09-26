@@ -22,13 +22,13 @@ namespace Toggl.Foundation.Sync.ConflictResolution
             => potentialRival => !entity.Stop.HasValue && !potentialRival.Stop.HasValue;
 
         public (IDatabaseTimeEntry FixedEntity, IDatabaseTimeEntry FixedRival) FixRivals(IDatabaseTimeEntry entity, IDatabaseTimeEntry rival, IQueryable<IDatabaseTimeEntry> allTimeEntries)
-            => entity.At > rival.At ? (entity, stop(rival, allTimeEntries)) : (stop(entity, allTimeEntries), rival);
+            => rival.At < entity.At ? (entity, stop(rival, allTimeEntries)) : (stop(entity, allTimeEntries), rival);
 
         private IDatabaseTimeEntry stop(IDatabaseTimeEntry toBeStopped, IQueryable<IDatabaseTimeEntry> allTimeEntries)
         {
             var next = allTimeEntries
-                .OrderBy(te => te.Stop)
-                .FirstOrDefault(other => other.Stop > toBeStopped.Start);
+                .OrderBy(te => te.Start)
+                .FirstOrDefault(other => other.Start > toBeStopped.Start);
             var stop = next?.Start ?? timeService.CurrentDateTime;
             return new TimeEntry(toBeStopped, stop);
         }
