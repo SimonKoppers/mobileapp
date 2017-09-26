@@ -65,9 +65,11 @@
     <Compile Include="Sync\ConflictResolution\Selectors\TagSyncSelector.cs" />
     <Compile Include="Sync\ConflictResolution\Selectors\TaskSyncSelector.cs" />
     <Compile Include="Sync\ConflictResolution\Selectors\WorkspaceSyncSelector.cs" />
+    <Compile Include="Sync\IRetryDelayService.cs" />
     <Compile Include="Sync\IStateMachineOrchestrator.cs" />
     <Compile Include="Sync\ISyncManager.cs" />
     <Compile Include="Sync\ISyncStateQueue.cs" />
+    <Compile Include="Sync\RetryDelayService.cs" />
     <Compile Include="Sync\StateMachineEntryPoints.cs" />
     <Compile Include="Sync\StateMachineOrchestrator.cs" />
     <Compile Include="Sync\StateMachine\IStateMachine.cs" />
