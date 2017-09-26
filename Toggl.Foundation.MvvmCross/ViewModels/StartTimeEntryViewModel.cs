@@ -284,7 +284,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                     .SelectMany(tuple =>
                         dataSource.Workspaces
                             .WorkspaceHasFeature(tuple.Workspace.Id, WorkspaceFeatureId.Pro)
-                            .Select(isAvailable => (IsBillableAvailable: isAvailable, IsBillable: tuple.DefaultToBillable)));
+                            .Select(isAvailable => (IsBillableAvailable: isAvailable, IsBillable: isAvailable && tuple.DefaultToBillable)));
         }
     }
 }

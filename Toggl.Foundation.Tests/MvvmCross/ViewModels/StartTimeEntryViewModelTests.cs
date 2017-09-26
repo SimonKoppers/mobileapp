@@ -11,6 +11,7 @@ using Toggl.Foundation.DTOs;
 using Toggl.Foundation.MvvmCross.Parameters;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Foundation.Tests.Generators;
+using Toggl.Multivac;
 using Toggl.PrimeRadiant.Models;
 using Xunit;
 using static Toggl.Foundation.MvvmCross.Helper.Constants;
@@ -26,6 +27,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             protected const string TagName = "Mobile";
 
             protected const long ProjectId = 10;
+            protected const long WorkspaceId = 40;
             protected const string ProjectName = "Toggl";
             protected const string ProjectColor = "#F41F19";
             protected const string Description = "Testing Toggl mobile apps";
@@ -70,6 +72,27 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 ViewModel.Prepare(date);
 
                 ViewModel.StartTime.Should().BeSameDateAs(date);
+            }
+        }
+
+        public sealed class TheInitializeMethod : StartTimeEntryViewModelTest
+        {
+            [Theory]
+            [InlineData(true)]
+            [InlineData(false)]
+            public async Task ChecksIfBillableIsAvailableForTheDefaultWorkspace(bool billableValue)
+            {
+                var workspace = Substitute.For<IDatabaseWorkspace>();
+                workspace.Id.Returns(10);
+                DataSource.Workspaces.GetDefault()
+                    .Returns(Observable.Return(workspace));
+                DataSource.Workspaces.WorkspaceHasFeature(10, WorkspaceFeatureId.Pro)
+                    .Returns(Observable.Return(billableValue));
+                ViewModel.Prepare(DateTimeOffset.UtcNow);
+
+                await ViewModel.Initialize();
+
+                ViewModel.IsBillableAvailable.Should().Be(billableValue);
             }
         }
 
@@ -442,15 +465,21 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 protected IDatabaseTag Tag { get; }
                 protected IDatabaseProject Project { get; }
                 protected IDatabaseTimeEntry TimeEntry { get; }
+                protected IDatabaseWorkspace Workspace { get; }
 
                 protected abstract TSuggestion Suggestion { get; }
 
                 protected SelectSuggestionTest()
                 {
+                    Workspace = Substitute.For<IDatabaseWorkspace>();
+                    Workspace.Id.Returns(WorkspaceId);
+
                     Project = Substitute.For<IDatabaseProject>();
                     Project.Id.Returns(ProjectId);
                     Project.Name.Returns(ProjectName);
                     Project.Color.Returns(ProjectColor);
+                    Project.Workspace.Returns(Workspace);
+                    Project.WorkspaceId.Returns(WorkspaceId);
 
                     TimeEntry = Substitute.For<IDatabaseTimeEntry>();
                     TimeEntry.Description.Returns(Description);
@@ -502,6 +531,43 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                     ViewModel.TextFieldInfo.ProjectColor.Should().Be(ProjectColor);
                 }
+
+                [Theory]
+                [InlineData(true)]
+                [InlineData(false)]
+                [InlineData(null)]
+                public void SetsTheAppropriateBillableValue(bool? billableValue)
+                {
+                    Project.Billable.Returns(billableValue);
+                    DataSource.Projects.GetById(ProjectId).Returns(Observable.Return(Project));
+                    DataSource.Workspaces.GetById(WorkspaceId).Returns(Observable.Return(Workspace));
+                    DataSource.Workspaces.WorkspaceHasFeature(WorkspaceId, WorkspaceFeatureId.Pro)
+                        .Returns(Observable.Return(true));
+
+                    ViewModel.SelectSuggestionCommand.Execute(Suggestion);
+
+                    ViewModel.IsBillable.Should().Be(billableValue ?? false);
+                    ViewModel.IsBillableAvailable.Should().BeTrue();
+                }
+
+                [Theory]
+                [InlineData(true)]
+                [InlineData(false)]
+                [InlineData(null)]
+                public async Task DisablesBillableIfTheWorkspaceOfTheSelectedProjectDoesNotAllowIt(bool? billableValue)
+                {
+                    Project.Billable.Returns(billableValue);
+                    DataSource.Projects.GetById(ProjectId).Returns(Observable.Return(Project));
+                    DataSource.Workspaces.GetById(WorkspaceId).Returns(Observable.Return(Workspace));
+                    DataSource.Workspaces.WorkspaceHasFeature(WorkspaceId, WorkspaceFeatureId.Pro)
+                        .Returns(Observable.Return(false));
+
+                    ViewModel.SelectSuggestionCommand.Execute(Suggestion);
+                    await Task.Delay(1000);
+
+                    ViewModel.IsBillable.Should().BeFalse();
+                    ViewModel.IsBillableAvailable.Should().BeFalse();
+                }
             }
 
             public sealed class WhenSelectingAProjectSuggestion : SelectSuggestionTest<ProjectSuggestion>
@@ -545,6 +611,42 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     ViewModel.SelectSuggestionCommand.Execute(Suggestion);
 
                     ViewModel.TextFieldInfo.ProjectColor.Should().Be(ProjectColor);
+                }
+
+                [Theory]
+                [InlineData(true)]
+                [InlineData(false)]
+                [InlineData(null)]
+                public void SetsTheAppropriateBillableValue(bool? billableValue)
+                {
+                    Project.Billable.Returns(billableValue);
+                    DataSource.Projects.GetById(ProjectId).Returns(Observable.Return(Project));
+                    DataSource.Workspaces.GetById(WorkspaceId).Returns(Observable.Return(Workspace));
+                    DataSource.Workspaces.WorkspaceHasFeature(WorkspaceId, WorkspaceFeatureId.Pro)
+                        .Returns(Observable.Return(true));
+
+                    ViewModel.SelectSuggestionCommand.Execute(Suggestion);
+
+                    ViewModel.IsBillable.Should().Be(billableValue ?? false);
+                    ViewModel.IsBillableAvailable.Should().BeTrue();
+                }
+
+                [Theory]
+                [InlineData(true)]
+                [InlineData(false)]
+                [InlineData(null)]
+                public void DisablesBillableIfTheWorkspaceOfTheSelectedProjectDoesNotAllowIt(bool? billableValue)
+                {
+                    Project.Billable.Returns(billableValue);
+                    DataSource.Projects.GetById(ProjectId).Returns(Observable.Return(Project));
+                    DataSource.Workspaces.GetById(WorkspaceId).Returns(Observable.Return(Workspace));
+                    DataSource.Workspaces.WorkspaceHasFeature(WorkspaceId, WorkspaceFeatureId.Pro)
+                        .Returns(Observable.Return(false));
+
+                    ViewModel.SelectSuggestionCommand.Execute(Suggestion);
+
+                    ViewModel.IsBillable.Should().BeFalse();
+                    ViewModel.IsBillableAvailable.Should().BeFalse();
                 }
             }
 
