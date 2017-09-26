@@ -13,8 +13,7 @@ namespace Toggl.Foundation.Tests.Sync.States
         private IRepository<TModel> repository;
 
         public StateResult<TModel> MarkedAsUnsyncable { get; } = new StateResult<TModel>();
-        public StateResult<(TModel Entity, double LastWaitingTime)> FastRetry { get; } = new StateResult<(TModel, double)>();
-        public StateResult<(TModel Entity, double LastWaitingTime)> SlowRetry { get; } = new StateResult<(TModel, double)>();
+        public StateResult CheckServerStatus { get; } = new StateResult();
 
         public BaseUnsyncableEntityState(IRepository<TModel> repository)
         {
@@ -45,9 +44,7 @@ namespace Toggl.Foundation.Tests.Sync.States
                 .Select(updated => MarkedAsUnsyncable.Transition(CopyFrom(updated.Entity)));
 
         private IObservable<ITransition> enterRetryLoop((Exception Reason, TModel Entity) failedPush)
-            => failedPush.Reason is InternalServerErrorException
-                ? Observable.Return(SlowRetry.Transition((failedPush.Entity, 0)))
-                : Observable.Return(FastRetry.Transition((failedPush.Entity, 0)));
+            => Observable.Return(CheckServerStatus.Transition());
 
         private Func<TModel, TModel, ConflictResolutionMode> overwriteIfLocalEntityDidNotChange(TModel local)
             => (currentLocal, _) => HasChanged(local, currentLocal)
