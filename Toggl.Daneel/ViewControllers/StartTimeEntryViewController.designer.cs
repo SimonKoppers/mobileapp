@@ -20,6 +20,10 @@ namespace Toggl.Daneel.ViewControllers
 
         [Outlet]
         [GeneratedCode ("iOS Designer", "1.0")]
+        UIKit.NSLayoutConstraint BillableButtonWidthConstraint { get; set; }
+
+        [Outlet]
+        [GeneratedCode ("iOS Designer", "1.0")]
         UIKit.NSLayoutConstraint BottomDistanceConstraint { get; set; }
 
         [Outlet]
@@ -67,6 +71,11 @@ namespace Toggl.Daneel.ViewControllers
             if (BillableButton != null) {
                 BillableButton.Dispose ();
                 BillableButton = null;
+            }
+
+            if (BillableButtonWidthConstraint != null) {
+                BillableButtonWidthConstraint.Dispose ();
+                BillableButtonWidthConstraint = null;
             }
 
             if (BottomDistanceConstraint != null) {

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13196" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
@@ -24,11 +24,12 @@
                 <outlet property="TagsButton" destination="H7M-A1-mmK" id="name-outlet-H7M-A1-mmK"/>
                 <outlet property="TimeLabel" destination="3I4-ki-f8o" id="name-outlet-3I4-ki-f8o"/>
                 <outlet property="view" destination="2" id="RRd-Eg-VrN"/>
+                <outlet property="BillableButtonWidthConstraint" destination="I25-Y2-oUz" id="name-outlet-I25-Y2-oUz"/>
             </connections>
         </placeholder>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
         <view contentMode="scaleToFill" id="2">
-            <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+            <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <subviews>
                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="MAa-jq-GXB">
@@ -39,13 +40,13 @@
                     </constraints>
                     <state key="normal" image="icClose"/>
                 </button>
-                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="5 sec" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3I4-ki-f8o">
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="5 sec" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3I4-ki-f8o" misplaced="YES">
                     <rect key="frame" x="170" y="12" width="36" height="17"/>
                     <fontDescription key="fontDescription" type="system" weight="medium" pointSize="14"/>
                     <nil key="textColor"/>
                     <nil key="highlightedColor"/>
                 </label>
-                <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" bounces="NO" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="R8W-w1-sEf" customClass="TimeEntryTagsTextView">
+                <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" bounces="NO" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="R8W-w1-sEf" customClass="TimeEntryTagsTextView" misplaced="YES">
                     <rect key="frame" x="16" y="64" width="343" height="72"/>
                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     <constraints>
@@ -54,10 +55,10 @@
                     <fontDescription key="fontDescription" type="system" pointSize="16"/>
                     <textInputTraits key="textInputTraits" autocapitalizationType="sentences" autocorrectionType="no" spellCheckingType="no" keyboardType="twitter"/>
                 </textView>
-                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="dU3-s1-ELa">
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="dU3-s1-ELa" misplaced="YES">
                     <rect key="frame" x="0.0" y="617" width="375" height="50"/>
                     <subviews>
-                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="2em-4m-f1y">
+                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="2em-4m-f1y" misplaced="YES">
                             <rect key="frame" x="0.0" y="0.0" width="375" height="1"/>
                             <color key="backgroundColor" red="0.90980392156862744" green="0.90980392156862744" blue="0.90980392156862744" alpha="1" colorSpace="calibratedRGB"/>
                             <constraints>
@@ -78,6 +79,9 @@
                         <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Xnc-Zt-xWV">
                             <rect key="frame" x="86" y="0.0" width="42" height="50"/>
                             <accessibility key="accessibilityConfiguration" label="StartTimeEntryBillable"/>
+                            <constraints>
+                                <constraint firstAttribute="width" constant="42" id="I25-Y2-oUz"/>
+                            </constraints>
                             <state key="normal" image="icBillable"/>
                         </button>
                         <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4Tp-xX-rFB">
@@ -88,7 +92,7 @@
                             <rect key="frame" x="166" y="0.0" width="42" height="50"/>
                             <state key="normal" image="duration"/>
                         </button>
-                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Hya-nl-hcs">
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Hya-nl-hcs" misplaced="YES">
                             <rect key="frame" x="325" y="0.0" width="50" height="50"/>
                             <accessibility key="accessibilityConfiguration" label="StartTimeEntryDone"/>
                             <state key="normal" image="icDone"/>
@@ -98,10 +102,10 @@
                     <constraints>
                         <constraint firstItem="Hya-nl-hcs" firstAttribute="width" secondItem="dU3-s1-ELa" secondAttribute="height" multiplier="1:1" id="05f-8r-PWq"/>
                         <constraint firstItem="4Tp-xX-rFB" firstAttribute="centerY" secondItem="Xnc-Zt-xWV" secondAttribute="centerY" id="0pD-l2-1EY"/>
+                        <constraint firstItem="4Tp-xX-rFB" firstAttribute="width" secondItem="H7M-A1-mmK" secondAttribute="width" id="1RC-QU-4sg"/>
                         <constraint firstItem="lT7-d8-d3t" firstAttribute="centerY" secondItem="4Tp-xX-rFB" secondAttribute="centerY" id="4Sr-sy-ow5"/>
                         <constraint firstItem="qfx-lJ-emc" firstAttribute="height" secondItem="dU3-s1-ELa" secondAttribute="height" id="57F-eo-fSD"/>
                         <constraint firstItem="Xnc-Zt-xWV" firstAttribute="height" secondItem="H7M-A1-mmK" secondAttribute="height" id="7QF-p9-duO"/>
-                        <constraint firstItem="4Tp-xX-rFB" firstAttribute="width" secondItem="Xnc-Zt-xWV" secondAttribute="width" id="GZA-Qp-2N9"/>
                         <constraint firstAttribute="trailing" secondItem="2em-4m-f1y" secondAttribute="trailing" id="HMI-6t-ddi"/>
                         <constraint firstAttribute="height" constant="50" id="I0s-0r-NeA"/>
                         <constraint firstItem="Xnc-Zt-xWV" firstAttribute="leading" secondItem="H7M-A1-mmK" secondAttribute="trailing" id="LML-We-R2J"/>
@@ -112,7 +116,6 @@
                         <constraint firstItem="4Tp-xX-rFB" firstAttribute="height" secondItem="Xnc-Zt-xWV" secondAttribute="height" id="SqF-uV-74q"/>
                         <constraint firstItem="2em-4m-f1y" firstAttribute="top" secondItem="dU3-s1-ELa" secondAttribute="top" id="T6W-gD-PS2"/>
                         <constraint firstItem="H7M-A1-mmK" firstAttribute="centerY" secondItem="qfx-lJ-emc" secondAttribute="centerY" id="TTW-fb-T8a"/>
-                        <constraint firstItem="Xnc-Zt-xWV" firstAttribute="width" secondItem="H7M-A1-mmK" secondAttribute="width" id="UEC-od-ogA"/>
                         <constraint firstItem="lT7-d8-d3t" firstAttribute="height" secondItem="4Tp-xX-rFB" secondAttribute="height" id="YHB-Ok-1qF"/>
                         <constraint firstItem="Hya-nl-hcs" firstAttribute="height" secondItem="dU3-s1-ELa" secondAttribute="height" id="b12-fm-KQu"/>
                         <constraint firstAttribute="trailing" secondItem="Hya-nl-hcs" secondAttribute="trailing" id="c5E-bE-Rmf"/>
@@ -125,7 +128,7 @@
                         <constraint firstItem="H7M-A1-mmK" firstAttribute="height" secondItem="qfx-lJ-emc" secondAttribute="height" id="yu9-x5-VRI"/>
                     </constraints>
                 </view>
-                <tableView clipsSubviews="YES" contentMode="scaleToFill" bounces="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="04s-S8-twa">
+                <tableView clipsSubviews="YES" contentMode="scaleToFill" bounces="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="04s-S8-twa" misplaced="YES">
                     <rect key="frame" x="0.0" y="136" width="375" height="481"/>
                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                 </tableView>
@@ -157,5 +160,30 @@
         <image name="icDone" width="16" height="12"/>
         <image name="icProjects" width="16" height="12"/>
         <image name="icTags" width="14" height="13"/>
+        <image name="icArrowUp" width="10" height="6"/>
+        <image name="icContinue" width="10" height="11"/>
+        <image name="icDownS" width="8" height="5"/>
+        <image name="icRefresh" width="20" height="14"/>
+        <image name="icReports" width="16" height="18"/>
+        <image name="icSettings" width="16" height="16"/>
+        <image name="icSyncerror" width="16" height="16"/>
+        <image name="icUpS" width="8" height="5"/>
+        <image name="playIcon" width="50" height="50"/>
+        <image name="stopIcon" width="34" height="34"/>
+        <image name="togglLogoWhite" width="111" height="35"/>
+        <image name="notebook" width="95" height="85"/>
+        <image name="togglCronometer" width="126" height="140"/>
+        <image name="icOnePassword" width="15" height="15"/>
+        <image name="icPassword" width="15" height="10"/>
+        <image name="togglLogo" width="63" height="19"/>
+        <image name="line" width="2" height="14"/>
+        <image name="icLoader" width="24" height="24"/>
+        <image name="icAdd" width="10" height="10"/>
+        <image name="icProjectDot" width="6" height="6"/>
+        <image name="icIllustrationTimer" width="89" height="90"/>
+        <image name="icIllustrationPaws" width="112" height="41"/>
+        <image name="icIllustrationSpider" width="60" height="205"/>
+        <image name="icDoneSmall" width="12" height="9"/>
+        <image name="icSearch" width="13" height="12"/>
     </resources>
 </document>
