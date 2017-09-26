@@ -151,8 +151,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 Description = Description,
                 StartTime = StartTime,
                 StopTime = StopTime,
-                ProjectId = projectId,
-                Billable = Billable
+                ProjectId = projectId
             };
 
             confirmDisposable = dataSource.TimeEntries
