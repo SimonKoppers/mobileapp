@@ -23,9 +23,9 @@ namespace Toggl.Foundation.DataSources
             this.database = database;
 
             User = new UserDataSource(database.User);
+            Workspaces = new WorkspacesDataSource(database);
             Projects = new ProjectsDataSource(database.Projects);
             TimeEntries = new TimeEntriesDataSource(database.IdProvider, database.TimeEntries, timeService);
-
             AutocompleteProvider = new AutocompleteProvider(database);
             SyncManager = TogglSyncManager.CreateSyncManager(database, api, this, scheduler);
         }
@@ -35,7 +35,7 @@ namespace Toggl.Foundation.DataSources
         public ITasksSource Tasks => throw new NotImplementedException();
         public IClientsSource Clients => throw new NotImplementedException();
         public IProjectsSource Projects { get; }
-        public IWorkspacesSource Workspaces => throw new NotImplementedException();
+        public IWorkspacesSource Workspaces { get; }
         public ITimeEntriesSource TimeEntries { get; }
 
         public ISyncManager SyncManager { get; }
