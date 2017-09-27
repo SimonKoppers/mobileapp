@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -25,16 +26,23 @@ namespace Toggl.Ultrawave.Tests.Clients
             }
 
             [Fact]
-            public async Task NeverThrows()
+            public async Task DoesNotHideThrownExceptions()
             {
+                bool caughtException = false;
                 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
                 apiClient
                     .Send(Arg.Any<IRequest>())
                     .Returns(async x => throw new WebException());
                 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
 
-                var status = await statusApi.Get();
-                status.Should().BeFalse();
+                statusApi.Get()
+                    .Catch((Exception exception) =>
+                    {
+                        caughtException = exception is WebException;
+                        return Observable.Return(false);
+                    }).Wait();
+
+                caughtException.Should().BeTrue();
             }
 
             [Fact]

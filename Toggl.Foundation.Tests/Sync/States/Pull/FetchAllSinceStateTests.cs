@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reactive.Linq;
 using FluentAssertions;
+using FsCheck.Xunit;
 using NSubstitute;
 using Toggl.Foundation.Sync;
 using Toggl.Foundation.Sync.States;
@@ -19,13 +20,16 @@ namespace Toggl.Foundation.Tests.Sync.States
         {
             private readonly ITogglDatabase database;
             private readonly ITogglApi api;
+            private readonly ITimeService timeService;
             private readonly FetchAllSinceState state;
 
             public TheStartMethod()
             {
                 database = Substitute.For<ITogglDatabase>();
                 api = Substitute.For<ITogglApi>();
-                state = new FetchAllSinceState(database, api);
+                timeService = Substitute.For<ITimeService>();
+                timeService.CurrentDateTime.Returns(DateTimeOffset.Now);
+                state = new FetchAllSinceState(database, api, timeService);
             }
 
             [Fact]
@@ -50,17 +54,24 @@ namespace Toggl.Foundation.Tests.Sync.States
                 var wf = api.DidNotReceive().WorkspaceFeatures;
             }
 
-            [Fact]
-            public void MakesCorrectCallsWithSinceThresholds()
+            [Property]
+            public void MakesCorrectCallsWithSinceThresholdsWhenSinceIsLessThanTwoMonthsInThePast(double val)
             {
-                var now = DateTimeOffset.Now;
+                if (double.IsNaN(val) || double.IsInfinity(val))
+                    return;
+
+                var now = timeService.CurrentDateTime;
+                var twoMonths = (now.AddMonths(2) - now);
+                var seconds = twoMonths.TotalSeconds * (Math.Abs(val) / double.MaxValue);
+                var since = now.AddSeconds(-seconds);
+
                 var sinceParameters = Substitute.For<ISinceParameters>();
-                sinceParameters.Clients.Returns(now.AddMinutes(-1));
-                sinceParameters.Projects.Returns(now.AddMinutes(-2));
-                sinceParameters.Tasks.Returns(now.AddMinutes(-3));
-                sinceParameters.Tags.Returns(now.AddMinutes(-4));
-                sinceParameters.Workspaces.Returns(now.AddMinutes(-5));
-                sinceParameters.TimeEntries.Returns(now.AddMinutes(-6));
+                sinceParameters.Clients.Returns(since);
+                sinceParameters.Projects.Returns(since);
+                sinceParameters.Tasks.Returns(since);
+                sinceParameters.Tags.Returns(since);
+                sinceParameters.Workspaces.Returns(since);
+                sinceParameters.TimeEntries.Returns(since);
 
                 database.SinceParameters.Returns(Substitute.For<ISinceParameterRepository>());
                 database.SinceParameters.Get().Returns(sinceParameters);
@@ -68,11 +79,36 @@ namespace Toggl.Foundation.Tests.Sync.States
                 state.Start().Wait();
                 
                 api.Workspaces.Received().GetAll();
-                api.Clients.Received().GetAllSince(sinceParameters.Clients.Value);
-                api.Projects.Received().GetAllSince(sinceParameters.Projects.Value);
-                api.TimeEntries.Received().GetAllSince(sinceParameters.TimeEntries.Value);
-                api.Tasks.Received().GetAllSince(sinceParameters.Tasks.Value);
-                api.Tags.Received().GetAllSince(sinceParameters.Tags.Value);
+                api.Clients.Received().GetAllSince(since);
+                api.Projects.Received().GetAllSince(since);
+                api.TimeEntries.Received().GetAllSince(since);
+                api.Tasks.Received().GetAllSince(since);
+                api.Tags.Received().GetAllSince(since);
+            }
+
+            [Fact]
+            public void MakesApiCallsWithoutTheSinceParameterWhenTheThresholdIsMoreThanTwoMonthsInThePast()
+            {
+                var now = timeService.CurrentDateTime;
+                var sinceParameters = Substitute.For<ISinceParameters>();
+                sinceParameters.Clients.Returns(now.AddMonths(-3));
+                sinceParameters.Projects.Returns(now.AddMonths(-4));
+                sinceParameters.Tasks.Returns(now.AddMonths(-5));
+                sinceParameters.Tags.Returns(now.AddMonths(-6));
+                sinceParameters.Workspaces.Returns(now.AddMonths(-7));
+                sinceParameters.TimeEntries.Returns(now.AddMonths(-8));
+
+                database.SinceParameters.Returns(Substitute.For<ISinceParameterRepository>());
+                database.SinceParameters.Get().Returns(sinceParameters);
+
+                state.Start().Wait();
+                
+                api.Workspaces.Received().GetAll();
+                api.Clients.Received().GetAll();
+                api.Projects.Received().GetAll();
+                api.TimeEntries.Received().GetAll();
+                api.Tasks.Received().GetAll();
+                api.Tags.Received().GetAll();
             }
 
             [Fact]

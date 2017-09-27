@@ -3,12 +3,14 @@ using Foundation;
 using MvvmCross.Binding.BindingContext;
 using MvvmCross.Binding.iOS;
 using MvvmCross.iOS.Views;
+using MvvmCross.Plugins.Color.iOS;
 using MvvmCross.Plugins.Visibility;
 using Toggl.Daneel.Combiners;
 using Toggl.Daneel.Extensions;
 using Toggl.Daneel.Presentation.Attributes;
 using Toggl.Foundation;
 using Toggl.Foundation.MvvmCross.Converters;
+using Toggl.Foundation.MvvmCross.Helper;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using UIKit;
 
@@ -33,8 +35,12 @@ namespace Toggl.Daneel.ViewControllers
             var dateConverter = new DateToTitleStringValueConverter();
             var timeConverter = new DateTimeToTimeConverter();
             var visibilityConverter = new MvxVisibilityValueConverter();
-            var projectTaskClientCombiner = new ProjectTaskClientValueCombiner();
             var inverterVisibilityConverter = new MvxInvertedVisibilityValueConverter();
+            var projectTaskClientCombiner = new ProjectTaskClientValueCombiner(
+                ProjectTaskClientLabel.Font.CapHeight,
+                Color.EditTimeEntry.ClientText.ToNativeColor(),
+                false
+            );
 
             var bindingSet = this.CreateBindingSet<EditTimeEntryViewController, EditTimeEntryViewModel>();
             
@@ -48,11 +54,10 @@ namespace Toggl.Daneel.ViewControllers
             bindingSet.Bind(ProjectTaskClientLabel)
                       .For(v => v.AttributedText)
                       .ByCombining(projectTaskClientCombiner,
-                          nameof(EditTimeEntryViewModel.Project),
-                          nameof(EditTimeEntryViewModel.Task),
-                          nameof(EditTimeEntryViewModel.Client),
-                          ProjectTaskClientLabel.Font.CapHeight.ToString(),
-                          nameof(EditTimeEntryViewModel.ProjectColor)); 
+                          v => v.Project,
+                          v => v.Task,
+                          v => v.Client,
+                          v => v.ProjectColor); 
 
             bindingSet.Bind(StartDateLabel)
                       .To(vm => vm.StartTime)

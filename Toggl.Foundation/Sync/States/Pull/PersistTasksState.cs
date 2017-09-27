@@ -9,7 +9,7 @@ using Toggl.PrimeRadiant.Models;
 
 namespace Toggl.Foundation.Sync.States
 {
-    class PersistTasksState : BasePersistState<ITask, IDatabaseTask>
+    internal sealed class PersistTasksState : BasePersistState<ITask, IDatabaseTask>
     {
         public PersistTasksState(IRepository<IDatabaseTask> repository, ISinceParameterRepository sinceParameterRepository)
             : base(repository, sinceParameterRepository, Resolver.ForTasks())

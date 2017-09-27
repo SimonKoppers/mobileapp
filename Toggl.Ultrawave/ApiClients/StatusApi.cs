@@ -28,9 +28,9 @@ namespace Toggl.Ultrawave.ApiClients
 
                     observer.OnNext(response.IsSuccess);
                 }
-                catch
+                catch (Exception exception)
                 {
-                    observer.OnNext(false);
+                    observer.OnError(exception);
                 }
 
                 observer.OnCompleted();

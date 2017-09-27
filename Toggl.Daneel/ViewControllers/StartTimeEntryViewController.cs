@@ -57,6 +57,11 @@ namespace Toggl.Daneel.ViewControllers
                       .To(vm => vm.TextFieldInfo);
 
             //Buttons
+            bindingSet.Bind(TagsButton)
+                      .For(v => v.TintColor)
+                      .To(vm => vm.IsSuggestingTags)
+                      .WithConversion(buttonColorConverter);
+            
             bindingSet.Bind(BillableButton)
                       .For(v => v.TintColor)
                       .To(vm => vm.IsBillable)
@@ -83,6 +88,7 @@ namespace Toggl.Daneel.ViewControllers
             bindingSet.Bind(DurationButton).To(vm => vm.ChangeDurationCommand);
             bindingSet.Bind(BillableButton).To(vm => vm.ToggleBillableCommand);
             bindingSet.Bind(DateTimeButton).To(vm => vm.ChangeStartTimeCommand);
+            bindingSet.Bind(TagsButton).To(vm => vm.ToggleTagSuggestionsCommand);
             bindingSet.Bind(ProjectsButton).To(vm => vm.ToggleProjectSuggestionsCommand);
 
             bindingSet.Apply();
@@ -124,6 +130,7 @@ namespace Toggl.Daneel.ViewControllers
 
         private IEnumerable<UIButton> getButtons()
         {
+            yield return TagsButton;
             yield return ProjectsButton;
             yield return BillableButton;
             yield return DurationButton;

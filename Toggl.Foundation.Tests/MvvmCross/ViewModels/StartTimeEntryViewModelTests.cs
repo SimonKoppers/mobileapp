@@ -22,6 +22,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
     {
         public abstract class StartTimeEntryViewModelTest : BaseViewModelTests<StartTimeEntryViewModel>
         {
+            protected const long TagId = 20;
+            protected const string TagName = "Mobile";
+
             protected const long ProjectId = 10;
             protected const string ProjectName = "Toggl";
             protected const string ProjectColor = "#F41F19";
@@ -181,20 +184,20 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 ViewModel.IsEditingStartDate.Should().BeFalse();
             }
-        }   
+        }
 
-        public sealed class TheToggleProjectSuggestionsCommandCommand : StartTimeEntryViewModelTest
+        public sealed class TheToggleProjectSuggestionsCommand : StartTimeEntryViewModelTest
         {
-            public TheToggleProjectSuggestionsCommandCommand()
+            public TheToggleProjectSuggestionsCommand()
             {
-                var items = ProjectSuggestion.FromProjectsPrependingEmpty(Enumerable.Empty<IDatabaseProject>());
+                var suggestions = ProjectSuggestion.FromProjectsPrependingEmpty(Enumerable.Empty<IDatabaseProject>());
                 AutocompleteProvider
                     .Query(Arg.Is<TextFieldInfo>(info => info.Text.Contains("@")))
-                    .Returns(Observable.Return(items));
-                
+                    .Returns(Observable.Return(suggestions));
+
                 AutocompleteProvider
                     .Query(Arg.Any<string>(), Arg.Is(AutocompleteSuggestionType.Projects))
-                    .Returns(Observable.Return(items));
+                    .Returns(Observable.Return(suggestions));
             }
 
             [Fact]
@@ -246,7 +249,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [InlineData("Testing Toggl Apps@somequery")]
             [InlineData("Testing Toggl Apps@some query")]
             [InlineData("Testing Toggl Apps@some query@query")]
-            public void SetsTheIsSuggestingProjectsPropertyToFalseIfInProjectSuggestionMode(string description)
+            public void SetsTheIsSuggestingProjectsPropertyToFalseIfAlreadyInProjectSuggestionMode(string description)
             {
                 ViewModel.Prepare(DateTimeOffset.UtcNow);
                 ViewModel.TextFieldInfo = TextFieldInfo.Empty.WithTextAndCursor(description, description.Length);
@@ -276,6 +279,90 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 ViewModel.TextFieldInfo = TextFieldInfo.Empty.WithTextAndCursor(description, description.Length);
 
                 ViewModel.ToggleProjectSuggestionsCommand.Execute();
+
+                ViewModel.TextFieldInfo.Text.Should().Be(expected);
+            }
+        }
+
+        public sealed class TheToggleTagSuggestionsCommand : StartTimeEntryViewModelTest
+        {
+            public TheToggleTagSuggestionsCommand()
+            {
+                var tag = Substitute.For<IDatabaseTag>();
+                tag.Id.Returns(TagId);
+                tag.Name.Returns(TagName);
+                var suggestions = TagSuggestion.FromTags(new[] { tag });
+                AutocompleteProvider
+                    .Query(Arg.Is<TextFieldInfo>(info => info.Text.Contains("#")))
+                    .Returns(Observable.Return(suggestions));
+            }
+
+            [Fact]
+            public void SetsTheIsSuggestingTagsPropertyToTrueIfNotInTagSuggestionMode()
+            {
+                ViewModel.Prepare(DateTimeOffset.UtcNow);
+
+                ViewModel.ToggleTagSuggestionsCommand.Execute();
+
+                ViewModel.IsSuggestingTags.Should().BeTrue();
+            }
+
+            [Fact]
+            public void AddsHashtagSymbolAtTheEndOfTheQueryInOrderToTagSuggestionMode()
+            {
+                const string description = "Testing Toggl Apps";
+                var expected = $"{description}#";
+                ViewModel.Prepare(DateTimeOffset.UtcNow);
+                ViewModel.TextFieldInfo = TextFieldInfo.Empty.WithTextAndCursor(description, description.Length);
+
+                ViewModel.ToggleTagSuggestionsCommand.Execute();
+
+                ViewModel.TextFieldInfo.Text.Should().Be(expected);
+            }
+
+            [Theory]
+            [InlineData("#")]
+            [InlineData("#somequery")]
+            [InlineData("#some query")]
+            [InlineData("#some quer#query")]
+            [InlineData("Testing Toggl Apps #")]
+            [InlineData("Testing Toggl Apps #somequery")]
+            [InlineData("Testing Toggl Apps #some query")]
+            [InlineData("Testing Toggl Apps #some query#query")]
+            [InlineData("Testing Toggl Apps#")]
+            [InlineData("Testing Toggl Apps#somequery")]
+            [InlineData("Testing Toggl Apps#some query")]
+            [InlineData("Testing Toggl Apps#some query#query")]
+            public void SetsTheIsSuggestingTagsPropertyToFalseIfAlreadyInTagSuggestionMode(string description)
+            {
+                ViewModel.Prepare(DateTimeOffset.UtcNow);
+                ViewModel.TextFieldInfo = TextFieldInfo.Empty.WithTextAndCursor(description, description.Length);
+
+                ViewModel.ToggleTagSuggestionsCommand.Execute();
+
+                ViewModel.IsSuggestingTags.Should().BeFalse();
+            }
+
+            [Theory]
+            [InlineData("#", "")]
+            [InlineData("#somequery", "")]
+            [InlineData("#some query", "")]
+            [InlineData("#some query#query", "")]
+            [InlineData("Testing Toggl Apps #", "Testing Toggl Apps ")]
+            [InlineData("Testing Toggl Apps #somequery", "Testing Toggl Apps ")]
+            [InlineData("Testing Toggl Apps #some query", "Testing Toggl Apps ")]
+            [InlineData("Testing Toggl Apps #some query#query", "Testing Toggl Apps ")]
+            [InlineData("Testing Toggl Apps#", "Testing Toggl Apps")]
+            [InlineData("Testing Toggl Apps#somequery", "Testing Toggl Apps")]
+            [InlineData("Testing Toggl Apps#some query", "Testing Toggl Apps")]
+            [InlineData("Testing Toggl Apps#some query@query", "Testing Toggl Apps")]
+            public void RemovesTheHashtagSymbolFromTheDescriptionTextIfAlreadyInTagSuggestionMode(
+                string description, string expected)
+            {
+                ViewModel.Prepare(DateTimeOffset.UtcNow);
+                ViewModel.TextFieldInfo = TextFieldInfo.Empty.WithTextAndCursor(description, description.Length);
+
+                ViewModel.ToggleTagSuggestionsCommand.Execute();
 
                 ViewModel.TextFieldInfo.Text.Should().Be(expected);
             }
@@ -352,6 +439,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             public abstract class SelectSuggestionTest<TSuggestion> : StartTimeEntryViewModelTest
                 where TSuggestion : AutocompleteSuggestion
             {
+                protected IDatabaseTag Tag { get; }
                 protected IDatabaseProject Project { get; }
                 protected IDatabaseTimeEntry TimeEntry { get; }
 
@@ -363,9 +451,14 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     Project.Id.Returns(ProjectId);
                     Project.Name.Returns(ProjectName);
                     Project.Color.Returns(ProjectColor);
+
                     TimeEntry = Substitute.For<IDatabaseTimeEntry>();
                     TimeEntry.Description.Returns(Description);
                     TimeEntry.Project.Returns(Project);
+
+                    Tag = Substitute.For<IDatabaseTag>();
+                    Tag.Id.Returns(TagId);
+                    Tag.Name.Returns(TagName);
                 }
             }
 
@@ -452,6 +545,34 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     ViewModel.SelectSuggestionCommand.Execute(Suggestion);
 
                     ViewModel.TextFieldInfo.ProjectColor.Should().Be(ProjectColor);
+                }
+            }
+
+            public sealed class WhenSelectingATagSuggestion : SelectSuggestionTest<TagSuggestion>
+            {
+                protected override TagSuggestion Suggestion { get; }
+
+                public WhenSelectingATagSuggestion()
+                {
+                    Suggestion = new TagSuggestion(Tag);
+
+                    ViewModel.TextFieldInfo = TextFieldInfo.Empty.WithTextAndCursor("Something #togg", 15);
+                }
+
+                [Fact]
+                public void RemovesTheTagQueryFromTheTextFieldInfo()
+                {
+                    ViewModel.SelectSuggestionCommand.Execute(Suggestion);
+
+                    ViewModel.TextFieldInfo.Text.Should().Be("Something ");
+                }
+
+                [Fact]
+                public void AddsTheSuggestedTagToTheList()
+                {
+                    ViewModel.SelectSuggestionCommand.Execute(Suggestion);
+
+                    ViewModel.TextFieldInfo.Tags.Should().Contain(Suggestion);
                 }
             }
 
