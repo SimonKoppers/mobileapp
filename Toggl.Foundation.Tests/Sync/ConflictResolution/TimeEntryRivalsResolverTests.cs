@@ -17,12 +17,14 @@ namespace Toggl.Foundation.Tests.Sync.ConflictResolution
 
         private readonly ITimeService timeService;
 
+        private static readonly DateTimeOffset arbitraryTime = new DateTimeOffset(2017, 9, 1, 12, 0, 0, TimeSpan.Zero);
+
         private readonly IQueryable<IDatabaseTimeEntry> timeEntries = new EnumerableQuery<IDatabaseTimeEntry>(new[]
         {
-            TimeEntry.Clean(new Ultrawave.Models.TimeEntry { Start = new DateTimeOffset(2017, 9, 10, 12, 0, 0, TimeSpan.Zero) }),
-            TimeEntry.Clean(new Ultrawave.Models.TimeEntry { Start = new DateTimeOffset(2017, 9, 15, 12, 0, 0, TimeSpan.Zero) }),
-            TimeEntry.Clean(new Ultrawave.Models.TimeEntry { Start = new DateTimeOffset(2017, 9, 20, 12, 0, 0, TimeSpan.Zero) }),
-            TimeEntry.Clean(new Ultrawave.Models.TimeEntry { Start = new DateTimeOffset(2017, 9, 25, 12, 0, 0, TimeSpan.Zero) })
+            TimeEntry.Clean(new Ultrawave.Models.TimeEntry { Start = arbitraryTime, Stop = arbitraryTime.AddHours(2) }),
+            TimeEntry.Clean(new Ultrawave.Models.TimeEntry { Start = arbitraryTime.AddDays(5), Stop = arbitraryTime.AddDays(6) }),
+            TimeEntry.Clean(new Ultrawave.Models.TimeEntry { Start = arbitraryTime.AddDays(10), Stop = arbitraryTime.AddDays(10).AddHours(1) }),
+            TimeEntry.Clean(new Ultrawave.Models.TimeEntry { Start = arbitraryTime.AddDays(15), Stop = arbitraryTime.AddDays(15).AddSeconds(13) })
         });
 
         public TimeEntryRivalsResolverTests()
@@ -70,7 +72,6 @@ namespace Toggl.Foundation.Tests.Sync.ConflictResolution
 
             var x = TimeEntry.Clean(new Ultrawave.Models.TimeEntry { Stop = a });
             var y = TimeEntry.Clean(new Ultrawave.Models.TimeEntry { Stop = b });
-
             var areRivals = resolver.AreRivals(x).Compile()(y);
 
             areRivals.Should().BeFalse();
@@ -96,8 +97,8 @@ namespace Toggl.Foundation.Tests.Sync.ConflictResolution
         [Fact]
         public void TheStoppedTimeEntryMustBeMarkedAsSyncNeededAndTheStatusOfTheOtherOneShouldNotChange()
         {
-            var a = TimeEntry.Clean(new Ultrawave.Models.TimeEntry { Stop = null, At = new DateTimeOffset(2017, 9, 1, 12, 34, 56, TimeSpan.Zero) });
-            var b = TimeEntry.Clean(new Ultrawave.Models.TimeEntry { Stop = null, At = new DateTimeOffset(2017, 9, 9, 12, 34, 56, TimeSpan.Zero) });
+            var a = TimeEntry.Clean(new Ultrawave.Models.TimeEntry { Stop = null, At = arbitraryTime.AddDays(10) });
+            var b = TimeEntry.Clean(new Ultrawave.Models.TimeEntry { Stop = null, At = arbitraryTime.AddDays(11) });
 
             var (fixedA, fixedB) = resolver.FixRivals(a, b, timeEntries);
 
@@ -108,21 +109,21 @@ namespace Toggl.Foundation.Tests.Sync.ConflictResolution
         [Fact]
         public void TheStoppedEntityMustHaveTheStopTimeEqualToTheStartTimeOfTheNextEntryInTheDatabase()
         {
-            var a = TimeEntry.Clean(new Ultrawave.Models.TimeEntry { Stop = null, At = new DateTimeOffset(2017, 9, 17, 12, 34, 56, TimeSpan.Zero), Start = new DateTimeOffset(2017, 9, 17, 12, 34, 56, TimeSpan.Zero) });
-            var b = TimeEntry.Clean(new Ultrawave.Models.TimeEntry { Stop = null, At = new DateTimeOffset(2017, 9, 19, 12, 34, 56, TimeSpan.Zero) });
+            var a = TimeEntry.Clean(new Ultrawave.Models.TimeEntry { Stop = null, At = arbitraryTime.AddDays(10), Start = arbitraryTime.AddDays(12) });
+            var b = TimeEntry.Clean(new Ultrawave.Models.TimeEntry { Stop = null, At = arbitraryTime.AddDays(11), Start = arbitraryTime.AddDays(13) });
 
             var (fixedA, _) = resolver.FixRivals(a, b, timeEntries);
 
-            fixedA.Stop.Should().Be(new DateTimeOffset(2017, 9, 20, 12, 0, 0, TimeSpan.Zero));
+            fixedA.Stop.Should().Be(arbitraryTime.AddDays(15));
         }
 
         [Fact]
         public void TheStoppedEntityMustHaveTheStopTimeEqualToTheCurrentDateTimeOfTheTimeServiceWhenThereIsNoNextEntryInTheDatabase()
         {
-            var now = new DateTimeOffset(2017, 10, 25, 12, 34, 56, TimeSpan.Zero);
+            var now = arbitraryTime.AddDays(25);
             timeService.CurrentDateTime.Returns(now);
-            var a = TimeEntry.Clean(new Ultrawave.Models.TimeEntry { Stop = null, At = new DateTimeOffset(2017, 10, 17, 12, 34, 56, TimeSpan.Zero), Start = new DateTimeOffset(2017, 10, 1, 12, 34, 56, TimeSpan.Zero) });
-            var b = TimeEntry.Clean(new Ultrawave.Models.TimeEntry { Stop = null, At = new DateTimeOffset(2017, 10, 19, 12, 34, 56, TimeSpan.Zero) });
+            var a = TimeEntry.Clean(new Ultrawave.Models.TimeEntry { Stop = null, At = arbitraryTime.AddDays(21), Start = arbitraryTime.AddDays(20) });
+            var b = TimeEntry.Clean(new Ultrawave.Models.TimeEntry { Stop = null, At = arbitraryTime.AddDays(22), Start = arbitraryTime.AddDays(21) });
 
             var (fixedA, _) = resolver.FixRivals(a, b, timeEntries);
 
