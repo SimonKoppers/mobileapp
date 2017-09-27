@@ -18,7 +18,6 @@ namespace Toggl.Daneel.Presentation
 {
     public sealed class TogglPresenter : MvxIosViewPresenter
     {
-        private FromBottomTransitionDelegate FromBottomTransitionDelegate = new FromBottomTransitionDelegate();
         private ModalTransitionDelegate modalTransitionDelegate = new ModalTransitionDelegate();
 
         private CATransition FadeAnimation = new CATransition
@@ -57,17 +56,18 @@ namespace Toggl.Daneel.Presentation
 
         private void showModalCardViewController(UIViewController viewController, MvxBasePresentationAttribute attribute, MvxViewModelRequest request)
         {
+            var transitionDelegate = new FromBottomTransitionDelegate(
+                () => ModalViewControllers.Remove(viewController)
+            );
+
             viewController.ModalPresentationStyle = UIModalPresentationStyle.Custom;
-            viewController.TransitioningDelegate = FromBottomTransitionDelegate;
-            
-            if (MasterNavigationController.PresentedViewController == null)
-                MasterNavigationController.PresentViewController(viewController, true, null);
-            else
-                MasterNavigationController.PresentedViewController.PresentViewController(viewController, true, null);
+            viewController.TransitioningDelegate = transitionDelegate;
+
+            getCurrentControllerForPresenting().PresentViewController(viewController, true, null);
 
             ModalViewControllers.Add(viewController);
 
-            FromBottomTransitionDelegate.WireToViewController(viewController, () => ModalViewControllers.Remove(viewController));
+            transitionDelegate.WireToViewController(viewController);
         }
 
         private void showModalDialogViewController(UIViewController viewController, MvxBasePresentationAttribute attribute, MvxViewModelRequest request)
@@ -75,10 +75,7 @@ namespace Toggl.Daneel.Presentation
             viewController.ModalPresentationStyle = UIModalPresentationStyle.Custom;
             viewController.TransitioningDelegate = modalTransitionDelegate;
 
-            if (MasterNavigationController.PresentedViewController == null)
-                MasterNavigationController.PresentViewController(viewController, true, null);
-            else
-                MasterNavigationController.PresentedViewController.PresentViewController(viewController, true, null);
+            getCurrentControllerForPresenting().PresentViewController(viewController, true, null);
 
             ModalViewControllers.Add(viewController);
         }
@@ -114,7 +111,7 @@ namespace Toggl.Daneel.Presentation
 
         public override void Close(IMvxViewModel toClose)
         {
-            if (toClose.GetType() == typeof(LoginViewModel))
+            if (toClose is LoginViewModel)
             {
                 MasterNavigationController.View.Window.Layer.AddAnimation(FadeAnimation, CALayer.Transition);
                 MasterNavigationController.PopViewController(false);
@@ -131,5 +128,8 @@ namespace Toggl.Daneel.Presentation
 
             return new TogglNavigationController(viewController);
         }
+
+        private UIViewController getCurrentControllerForPresenting()
+            => MasterNavigationController.PresentedViewController ?? MasterNavigationController;
     }
 }

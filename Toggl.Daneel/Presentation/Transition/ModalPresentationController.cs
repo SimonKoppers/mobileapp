@@ -2,12 +2,14 @@
 using CoreGraphics;
 using MvvmCross.Plugins.Color.iOS;
 using Toggl.Foundation.MvvmCross.Helper;
+using Toggl.Multivac;
 using UIKit;
 
 namespace Toggl.Daneel.Presentation.Transition
 {
     public sealed class ModalPresentationController : UIPresentationController
     {
+        private readonly Action onCompletedCallback;
         private readonly nfloat defaultHeight = UIScreen.MainScreen.Bounds.Height - 20;
 
         private readonly UIView dimmingView = new UIView
@@ -16,9 +18,14 @@ namespace Toggl.Daneel.Presentation.Transition
             Alpha = 0
         };
 
-        public ModalPresentationController(UIViewController presentedViewController, UIViewController presentingViewController)
+        public ModalPresentationController(UIViewController presentedViewController, 
+            UIViewController presentingViewController, Action onCompletedCallback)
           : base(presentedViewController, presentingViewController)
         {
+            Ensure.Argument.IsNotNull(onCompletedCallback, nameof(onCompletedCallback));
+
+            this.onCompletedCallback = onCompletedCallback;
+
             var recognizer = new UITapGestureRecognizer(dismiss);
             dimmingView.AddGestureRecognizer(recognizer);
         }
@@ -86,6 +93,7 @@ namespace Toggl.Daneel.Presentation.Transition
         private void dismiss()
         {
             PresentedViewController.DismissViewController(true, null);
+            onCompletedCallback();
         }
     }
 }
