@@ -30,9 +30,13 @@ namespace Toggl.Foundation.Suggestions
         public IObservable<Suggestion> GetSuggestions()
             => database.TimeEntries
                        .GetAll(isWithinThreshold)
+                       .Select(timeEntries => timeEntries.Where(hasDescriptionOrProject))
                        .SelectMany(mostUsedTimeEntry)
                        .Take(maxNumberOfSuggestions);
-        
+
+        private bool hasDescriptionOrProject(ITimeEntry timeEntry)
+            => !string.IsNullOrEmpty(timeEntry.Description) || timeEntry.ProjectId != null;
+
         private bool isWithinThreshold(ITimeEntry timeEntry)
         {
             var delta = timeService.CurrentDateTime - timeEntry.Start;
