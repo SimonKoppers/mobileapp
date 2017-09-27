@@ -56,10 +56,34 @@
                             <constraint firstAttribute="height" constant="11" id="uBL-9K-Hda"/>
                         </constraints>
                     </imageView>
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icSyncerror" translatesAutoresizingMaskIntoConstraints="NO" id="ZL2-U3-2N0">
+                        <rect key="frame" x="286" y="34.5" width="16" height="16"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="16" id="2ce-tF-NXu"/>
+                            <constraint firstAttribute="width" constant="16" id="zUx-mP-hYa"/>
+                        </constraints>
+                    </imageView>
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icUnsynced" translatesAutoresizingMaskIntoConstraints="NO" id="xHF-rx-bdW">
+                        <rect key="frame" x="228" y="25" width="16" height="14"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="14" id="58F-aD-4b2"/>
+                            <constraint firstAttribute="width" constant="16" id="LUq-Mp-DSd"/>
+                        </constraints>
+                    </imageView>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Add description" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="o9Q-u7-v3V">
+                        <rect key="frame" x="17" y="14" width="102" height="17"/>
+                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                        <color key="textColor" red="0.80784313725490198" green="0.80784313725490198" blue="0.80784313725490198" alpha="1" colorSpace="calibratedRGB"/>
+                        <nil key="highlightedColor"/>
+                    </label>
                 </subviews>
                 <constraints>
+                    <constraint firstItem="pqJ-Ao-2Sj" firstAttribute="top" secondItem="FMY-EJ-tyu" secondAttribute="top" constant="34" id="75h-r6-UnJ"/>
                     <constraint firstItem="2Q5-T6-UvK" firstAttribute="leading" secondItem="pqJ-Ao-2Sj" secondAttribute="trailing" constant="10" id="Ay4-s9-8q0"/>
-                    <constraint firstItem="pqJ-Ao-2Sj" firstAttribute="top" secondItem="fIi-Jg-bLZ" secondAttribute="bottom" constant="3" id="cMG-ko-M8g"/>
+                    <constraint firstItem="o9Q-u7-v3V" firstAttribute="leading" secondItem="FMY-EJ-tyu" secondAttribute="leading" constant="17" id="RQD-nh-f2M"/>
+                    <constraint firstItem="o9Q-u7-v3V" firstAttribute="top" secondItem="FMY-EJ-tyu" secondAttribute="top" constant="14" id="bUb-Qj-cQZ"/>
+                    <constraint firstItem="ZL2-U3-2N0" firstAttribute="centerY" secondItem="2Q5-T6-UvK" secondAttribute="centerY" id="e8h-9o-foc"/>
+                    <constraint firstItem="ZL2-U3-2N0" firstAttribute="centerX" secondItem="2Q5-T6-UvK" secondAttribute="centerX" id="eVU-xk-iSb"/>
                 </constraints>
             </tableViewCellContentView>
             <constraints>
@@ -69,7 +93,9 @@
                 <constraint firstItem="BlD-YS-3Fa" firstAttribute="leading" secondItem="cZE-iV-UFb" secondAttribute="leading" id="7HY-ME-S5Z"/>
                 <constraint firstAttribute="bottom" secondItem="Re8-uD-vpm" secondAttribute="bottom" constant="4" id="A45-Fh-xoP"/>
                 <constraint firstAttribute="bottom" secondItem="2Q5-T6-UvK" secondAttribute="bottom" constant="16" id="Ami-Am-KDO"/>
+                <constraint firstItem="xHF-rx-bdW" firstAttribute="centerY" secondItem="cZE-iV-UFb" secondAttribute="centerY" id="C7J-Rk-xzH"/>
                 <constraint firstAttribute="bottom" secondItem="BlD-YS-3Fa" secondAttribute="bottom" id="HbJ-AJ-7p0"/>
+                <constraint firstAttribute="trailing" secondItem="xHF-rx-bdW" secondAttribute="trailing" constant="76" id="I7n-1l-1NG"/>
                 <constraint firstItem="pqJ-Ao-2Sj" firstAttribute="leading" secondItem="cZE-iV-UFb" secondAttribute="leading" constant="17" id="ItS-Zm-qw1"/>
                 <constraint firstAttribute="trailing" secondItem="Y3e-98-yuY" secondAttribute="trailing" constant="15" id="RYD-Zl-6qg"/>
                 <constraint firstAttribute="trailing" secondItem="2Q5-T6-UvK" secondAttribute="trailing" constant="21" id="WWV-Op-5Ma"/>
@@ -78,15 +104,22 @@
                 <constraint firstItem="fIi-Jg-bLZ" firstAttribute="leading" secondItem="cZE-iV-UFb" secondAttribute="leading" constant="17" id="xvl-nH-8VK"/>
             </constraints>
             <connections>
+                <outlet property="AddDescriptionLabel" destination="o9Q-u7-v3V" id="eU2-TN-Fzz"/>
+                <outlet property="AddDescriptionTopDistanceConstraint" destination="bUb-Qj-cQZ" id="OHp-wQ-JLS"/>
                 <outlet property="ContinueButton" destination="Re8-uD-vpm" id="name-outlet-Re8-uD-vpm"/>
+                <outlet property="ContinueImageView" destination="2Q5-T6-UvK" id="name-outlet-2Q5-T6-UvK"/>
                 <outlet property="DescriptionLabel" destination="fIi-Jg-bLZ" id="name-outlet-fIi-Jg-bLZ"/>
                 <outlet property="DescriptionTopDistanceConstraint" destination="3oh-LW-0AM" id="nrc-hr-Lhq"/>
                 <outlet property="ProjectTaskClientLabel" destination="pqJ-Ao-2Sj" id="name-outlet-pqJ-Ao-2Sj"/>
+                <outlet property="SyncErrorImageView" destination="ZL2-U3-2N0" id="name-outlet-ZL2-U3-2N0"/>
                 <outlet property="TimeLabel" destination="Y3e-98-yuY" id="name-outlet-Y3e-98-yuY"/>
+                <outlet property="UnsyncedImageView" destination="xHF-rx-bdW" id="name-outlet-xHF-rx-bdW"/>
             </connections>
         </tableViewCell>
     </objects>
     <resources>
         <image name="icContinue" width="10" height="11"/>
+        <image name="icSyncerror" width="16" height="16"/>
+        <image name="icUnsynced" width="16" height="14"/>
     </resources>
 </document>

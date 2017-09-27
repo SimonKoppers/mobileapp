@@ -8,7 +8,7 @@ using Toggl.PrimeRadiant.Models;
 
 namespace Toggl.Foundation.Sync.States
 {
-    class PersistWorkspacesFeaturesState : BasePersistState<IWorkspaceFeatureCollection, IDatabaseWorkspaceFeatureCollection>
+    internal sealed class PersistWorkspacesFeaturesState : BasePersistState<IWorkspaceFeatureCollection, IDatabaseWorkspaceFeatureCollection>
     {
         public PersistWorkspacesFeaturesState(IRepository<IDatabaseWorkspaceFeatureCollection> repository, ISinceParameterRepository sinceParameterRepository)
             : base(repository, sinceParameterRepository, Resolver.ForWorkspaceFeatures())

@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Reactive;
 
 namespace Toggl.Ultrawave.ApiClients
 {
     public interface IStatusApi
     {
-        IObservable<bool> Get();
+        IObservable<Unit> IsAvailable();
     }
 }

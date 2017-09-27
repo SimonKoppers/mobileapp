@@ -392,12 +392,13 @@ namespace Toggl.Foundation.Tests.DataSources
             {
                 var observable = Observable.Return(DatabaseTimeEntry);
                 Repository.GetById(Arg.Is(DatabaseTimeEntry.Id)).Returns(observable);
-                return new EditTimeEntryDto 
-                { 
-                    Id = DatabaseTimeEntry.Id, 
-                    Description = "New description", 
+                return new EditTimeEntryDto
+                {
+                    Id = DatabaseTimeEntry.Id,
+                    Description = "New description",
                     StartTime = DateTimeOffset.UtcNow,
-                    ProjectId = 13
+                    ProjectId = 13,
+                    Billable = true
                 };
             }
 
@@ -448,6 +449,16 @@ namespace Toggl.Foundation.Tests.DataSources
                 await TimeEntriesSource.Update(dto);
 
                 await Repository.Received().Update(Arg.Is(dto.Id), Arg.Is<IDatabaseTimeEntry>(te => te.ProjectId == dto.ProjectId));
+            }
+
+            [Fact]
+            public async ThreadingTask UpdatesTheBillbaleFlag()
+            {
+                var dto = prepareTest();
+
+                await TimeEntriesSource.Update(dto);
+
+                await Repository.Received().Update(Arg.Is(dto.Id), Arg.Is<IDatabaseTimeEntry>(te => te.Billable == dto.Billable));
             }
 
             [Fact]

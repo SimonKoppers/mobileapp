@@ -5,10 +5,12 @@ using MvvmCross.Binding.iOS;
 using MvvmCross.Binding.iOS.Views;
 using MvvmCross.Core.ViewModels;
 using MvvmCross.Plugins.Color;
+using MvvmCross.Plugins.Color.iOS;
 using MvvmCross.Plugins.Visibility;
 using Toggl.Daneel.Combiners;
 using Toggl.Daneel.Extensions;
 using Toggl.Foundation.MvvmCross.Converters;
+using Toggl.Foundation.MvvmCross.Helper;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using UIKit;
 
@@ -46,7 +48,12 @@ namespace Toggl.Daneel.Views
                 var colorConverter = new MvxRGBValueConverter();
                 var visibilityConverter = new MvxVisibilityValueConverter();
                 var timeSpanConverter = new TimeSpanToDurationValueConverter();
-                var projectTaskClientCombiner = new ProjectTaskClientValueCombiner();
+                var invertedVisibilityConverter = new MvxInvertedVisibilityValueConverter();
+                var projectTaskClientCombiner = new ProjectTaskClientValueCombiner(
+                    ProjectTaskClientLabel.Font.CapHeight,
+                    Color.TimeEntriesLog.ClientColor.ToNativeColor(),
+                    true
+                );
                 var descriptionTopDistanceValueConverter = 
                     new BoolToConstantValueConverter<nfloat>(hasProjectDistance, noProjectDistance);
                 
@@ -57,34 +64,56 @@ namespace Toggl.Daneel.Views
                 bindingSet.Bind(ProjectTaskClientLabel)
                           .For(v => v.AttributedText)
                           .ByCombining(projectTaskClientCombiner, 
-                              nameof(TimeEntryViewModel.ProjectName),
-                              nameof(TimeEntryViewModel.TaskName),
-                              nameof(TimeEntryViewModel.ClientName),
-                              ProjectTaskClientLabel.Font.CapHeight.ToString(), 
-                              nameof(TimeEntryViewModel.ProjectColor));
+                              v => v.ProjectName,
+                              v => v.TaskName,
+                              v => v.ClientName,
+                              v => v.ProjectColor);
 
                 bindingSet.Bind(TimeLabel)
                           .To(vm => vm.Duration)
                           .WithConversion(timeSpanConverter);
-
-                //Color
-                //TextColor only changes the color of attributed text that doesn't have a ForegroundColor
-                bindingSet.Bind(ProjectTaskClientLabel)
-                          .For(v => v.TextColor)
-                          .To(vm => vm.ProjectColor)
-                          .WithConversion(colorConverter);
 
                 //Visibility
                 bindingSet.Bind(DescriptionTopDistanceConstraint)
                           .For(v => v.Constant)
                           .To(vm => vm.HasProject)
                           .WithConversion(descriptionTopDistanceValueConverter);
-                
+
                 bindingSet.Bind(ProjectTaskClientLabel)
                           .For(v => v.BindVisibility())
                           .To(vm => vm.HasProject)
                           .WithConversion(visibilityConverter);
 
+                bindingSet.Bind(AddDescriptionLabel)
+                          .For(v => v.BindVisibility())
+                          .To(vm => vm.HasDescription)
+                          .WithConversion(invertedVisibilityConverter);
+
+                bindingSet.Bind(AddDescriptionTopDistanceConstraint)
+                          .For(v => v.Constant)
+                          .To(vm => vm.HasProject)
+                          .WithConversion(descriptionTopDistanceValueConverter);
+
+                bindingSet.Bind(SyncErrorImageView)
+                          .For(v => v.BindVisibility())
+                          .To(vm => vm.CanSync)
+                          .WithConversion(invertedVisibilityConverter);
+
+                bindingSet.Bind(UnsyncedImageView)
+                          .For(v => v.BindVisibility())
+                          .To(vm => vm.NeedsSync)
+                          .WithConversion(visibilityConverter);
+
+                bindingSet.Bind(ContinueButton)
+                          .For(v => v.BindVisibility())
+                          .To(vm => vm.CanSync)
+                          .WithConversion(visibilityConverter);
+
+                bindingSet.Bind(ContinueImageView)
+                          .For(v => v.BindVisibility())
+                          .To(vm => vm.CanSync)
+                          .WithConversion(visibilityConverter);
+                
                 bindingSet.Apply();
             });
         }

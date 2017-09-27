@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq;
+using System.Reactive;
 using System.Reactive.Linq;
+using Toggl.Ultrawave.Helpers;
 using Toggl.Ultrawave.Network;
 
 namespace Toggl.Ultrawave.ApiClients
@@ -16,9 +18,9 @@ namespace Toggl.Ultrawave.ApiClients
             this.apiClient = apiClient;
         }
 
-        public IObservable<bool> Get()
+        public IObservable<Unit> IsAvailable()
         {
-            return Observable.Create<bool>(async observer =>
+            return Observable.Create<Unit>(async observer =>
             {
                 try
                 {
@@ -26,11 +28,19 @@ namespace Toggl.Ultrawave.ApiClients
                     var request = new Request("", endpoint.Url, Enumerable.Empty<HttpHeader>(), endpoint.Method);
                     var response = await apiClient.Send(request).ConfigureAwait(false);
 
-                    observer.OnNext(response.IsSuccess);
+                    if (response.IsSuccess)
+                    {
+                        observer.OnNext(Unit.Default);
+                    }
+                    else
+                    {
+                        var error = ApiExceptions.ForResponse(response);
+                        observer.OnError(error);
+                    }
                 }
-                catch
+                catch (Exception exception)
                 {
-                    observer.OnNext(false);
+                    observer.OnError(exception);
                 }
 
                 observer.OnCompleted();

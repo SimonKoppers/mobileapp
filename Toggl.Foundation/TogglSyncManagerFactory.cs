@@ -49,7 +49,7 @@ namespace Toggl.Foundation
             ITimeService timeService,
             StateResult entryPoint)
         {
-            var fetchAllSince = new FetchAllSinceState(database, api);
+            var fetchAllSince = new FetchAllSinceState(database, api, timeService);
             var persistWorkspaces = new PersistWorkspacesState(database.Workspaces, database.SinceParameters);
             var persistWorkspaceFeatures = new PersistWorkspacesFeaturesState(database.WorkspaceFeatures, database.SinceParameters);
             var persistTags = new PersistTagsState(database.Tags, database.SinceParameters);

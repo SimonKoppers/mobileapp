@@ -35,6 +35,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public bool IsEditingStartDate { get; private set; }
 
+        public bool IsSuggestingTags { get; set; }
+
         public bool IsSuggestingProjects { get; set; }
 
         public TextFieldInfo TextFieldInfo { get; set; } = TextFieldInfo.Empty;
@@ -63,6 +65,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         public IMvxAsyncCommand ChangeStartTimeCommand { get; }
 
         public IMvxCommand ToggleBillableCommand { get; }
+        
+        public IMvxCommand ToggleTagSuggestionsCommand { get; }
 
         public IMvxCommand ToggleProjectSuggestionsCommand { get; }
 
@@ -84,6 +88,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             ToggleBillableCommand = new MvxCommand(toggleBillable);
             ChangeDurationCommand = new MvxAsyncCommand(changeDuration);
             ChangeStartTimeCommand = new MvxAsyncCommand(changeStartTime);
+            ToggleTagSuggestionsCommand = new MvxCommand(toggleTagSuggestions);
             ToggleProjectSuggestionsCommand = new MvxCommand(toggleProjectSuggestions);
             SelectSuggestionCommand = new MvxCommand<AutocompleteSuggestion>(selectSuggestion);
         }
@@ -160,6 +165,18 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             infoSubject.OnNext(TextFieldInfo);
         }
 
+        private void toggleTagSuggestions()
+        {
+            if (IsSuggestingTags)
+            {
+                TextFieldInfo = TextFieldInfo.RemoveTagQueryFromDescriptionIfNeeded();
+                return;
+            }
+
+            var newText = TextFieldInfo.Text.Insert(TextFieldInfo.CursorPosition, QuerySymbols.TagsString);
+            TextFieldInfo = TextFieldInfo.WithTextAndCursor(newText, TextFieldInfo.CursorPosition + 1);
+        }   
+
         private void toggleProjectSuggestions()
         {
             if (IsSuggestingProjects)
@@ -230,7 +247,9 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         private void onSuggestions(IEnumerable<AutocompleteSuggestion> suggestions)
         {
-            IsSuggestingProjects = suggestions.FirstOrDefault() is ProjectSuggestion;
+            var firstSuggestion = suggestions.FirstOrDefault();
+            IsSuggestingTags = firstSuggestion is TagSuggestion;
+            IsSuggestingProjects = firstSuggestion is ProjectSuggestion;
 
             Suggestions.Clear();
             Suggestions.AddRange(suggestions.Distinct(AutocompleteSuggestionComparer.Instance));

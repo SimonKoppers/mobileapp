@@ -11,13 +11,16 @@ namespace Toggl.Foundation.Sync.States
     {
         private readonly ITogglDatabase database;
         private readonly ITogglApi api;
+        private readonly ITimeService timeService;
+        private const int SinceDateLimitMonths = 2;
 
         public StateResult<FetchObservables> FetchStarted { get; } = new StateResult<FetchObservables>();
 
-        public FetchAllSinceState(ITogglDatabase database, ITogglApi api)
+        public FetchAllSinceState(ITogglDatabase database, ITogglApi api, ITimeService timeService)
         {
             this.database = database;
             this.api = api;
+            this.timeService = timeService;
         }
 
         public IObservable<ITransition> Start() => Observable.Create<ITransition>(observer =>
@@ -41,8 +44,11 @@ namespace Toggl.Foundation.Sync.States
             return () => { };
         });
 
-        private static IObservable<T> getSinceOrAll<T>(DateTimeOffset? threshold,
+        private IObservable<T> getSinceOrAll<T>(DateTimeOffset? threshold,
             Func<DateTimeOffset, IObservable<T>> since, Func<IObservable<T>> all)
-            => threshold.HasValue ? since(threshold.Value) : all();
+            => threshold.HasValue && isWithinLimit(threshold.Value) ? since(threshold.Value) : all();
+
+        private bool isWithinLimit(DateTimeOffset threshold)
+            => threshold > timeService.CurrentDateTime.AddMonths(-SinceDateLimitMonths);
     }
 }
