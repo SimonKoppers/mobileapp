@@ -5,7 +5,7 @@ using Toggl.Multivac;
 namespace Toggl.Foundation.MvvmCross.ViewModels
 {
     [Preserve(AllMembers = true)]
-    public sealed class SelectableTag : MvxNotifyPropertyChanged
+    public sealed class SelectableTagViewModel : MvxNotifyPropertyChanged
     {
         public long Id { get; }
 
@@ -15,12 +15,12 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public bool Selected { get; set; }
 
-        public SelectableTag(TagSuggestion tagSuggestion, bool selected)
+        public SelectableTagViewModel(TagSuggestion tagSuggestion, bool selected)
         {
             Id = tagSuggestion.TagId;
             Name = tagSuggestion.Name;
             Workspace = tagSuggestion.Workspace;
             Selected = selected;
         }
-}
+    }
 }

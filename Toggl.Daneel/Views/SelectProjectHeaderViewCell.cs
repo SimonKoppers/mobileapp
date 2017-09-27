@@ -2,6 +2,8 @@
 using Foundation;
 using MvvmCross.Binding.BindingContext;
 using MvvmCross.Binding.iOS.Views;
+using Toggl.Foundation.Autocomplete.Suggestions;
+using Toggl.Foundation.MvvmCross.Collections;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using UIKit;
 
@@ -23,7 +25,7 @@ namespace Toggl.Daneel.Views
             Nib = UINib.FromName(nameof(SelectProjectHeaderViewCell), NSBundle.MainBundle);
         }
 
-        protected SelectProjectHeaderViewCell(IntPtr handle) : base(handle)
+        public SelectProjectHeaderViewCell(IntPtr handle) : base(handle)
         {
             // Note: this .ctor should not contain any initialization logic.
         }
@@ -34,9 +36,9 @@ namespace Toggl.Daneel.Views
 
             this.DelayBind(() =>
             {
-                var bindingSet = this.CreateBindingSet<SelectProjectHeaderViewCell, ProjectSuggestionCollection>();
+                var bindingSet = this.CreateBindingSet<SelectProjectHeaderViewCell, WorkspaceGroupedCollection<ProjectSuggestion>>();
 
-                bindingSet.Bind(WorkspaceLabel).For(v => v.Text).To(vm => vm.Workspace);
+                bindingSet.Bind(WorkspaceLabel).For(v => v.Text).To(vm => vm.WorkspaceName);
                 
                 bindingSet.Apply();
             });

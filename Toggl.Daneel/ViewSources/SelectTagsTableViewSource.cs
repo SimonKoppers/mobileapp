@@ -5,6 +5,7 @@ using Foundation;
 using MvvmCross.Binding.ExtensionMethods;
 using MvvmCross.Binding.iOS.Views;
 using Toggl.Daneel.Views;
+using Toggl.Foundation.MvvmCross.Collections;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using UIKit;
 
@@ -15,8 +16,8 @@ namespace Toggl.Daneel.ViewSources
         private const string cellIdentifier = nameof(SelectableTagViewCell);
         private const string headerCellIdentifier = nameof(SelectTagsHeaderViewCell);
 
-        private IEnumerable<SelectableTagCollection> groupedItems
-            => (IEnumerable<SelectableTagCollection>)ItemsSource;
+        private IEnumerable<WorkspaceGroupedCollection<SelectableTagViewModel>> groupedItems
+            => (IEnumerable<WorkspaceGroupedCollection<SelectableTagViewModel>>)ItemsSource;
         
         public SelectTagsTableViewSource(UITableView tableView) : base(tableView)
         {
@@ -57,7 +58,7 @@ namespace Toggl.Daneel.ViewSources
         public override nint RowsInSection(UITableView tableview, nint section)
             => getGroupAt(section).Count();
 
-        private SelectableTagCollection getGroupAt(nint section)
+        private WorkspaceGroupedCollection<SelectableTagViewModel> getGroupAt(nint section)
             => groupedItems.ElementAt((int)section);
 
         protected override object GetItemAt(NSIndexPath indexPath)

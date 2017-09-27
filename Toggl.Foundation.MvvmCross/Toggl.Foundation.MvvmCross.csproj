@@ -49,7 +49,6 @@
     <Compile Include="ViewModels\EditTimeEntryViewModel.cs" />
     <Compile Include="Converters\TimeSpanToDurationWithUnitValueConverter.cs" />
     <Compile Include="ViewModels\TimeEntryViewModel.cs" />
-    <Compile Include="ViewModels\TimeEntryViewModelCollection.cs" />
     <Compile Include="Converters\DateTimeToTimeConverter.cs" />
     <Compile Include="Converters\TaskCountConverter.cs" />
     <Compile Include="Converters\BoolToConstantValueConverter.cs" />
@@ -61,9 +60,9 @@
     <Compile Include="Parameters\DatePickerParameters.cs" />
     <Compile Include="Helper\Constants.cs" />
     <Compile Include="ViewModels\SelectTagsViewModel.cs" />
-    <Compile Include="ViewModels\SelectableTag.cs" />
-    <Compile Include="ViewModels\SelectableTagCollection.cs" />
-    <Compile Include="ViewModels\ProjectSuggestionCollection.cs" />
+    <Compile Include="Collections\WorkspaceGroupedCollection.cs" />
+    <Compile Include="Collections\TimeEntryViewModelCollection.cs" />
+    <Compile Include="ViewModels\SelectableTagViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Reactive.Interfaces">

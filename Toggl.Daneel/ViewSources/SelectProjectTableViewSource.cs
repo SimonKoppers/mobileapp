@@ -5,7 +5,8 @@ using Foundation;
 using MvvmCross.Binding.ExtensionMethods;
 using MvvmCross.Binding.iOS.Views;
 using Toggl.Daneel.Views;
-using Toggl.Foundation.MvvmCross.ViewModels;
+using Toggl.Foundation.Autocomplete.Suggestions;
+using Toggl.Foundation.MvvmCross.Collections;
 using UIKit;
 
 namespace Toggl.Daneel.ViewSources
@@ -15,8 +16,8 @@ namespace Toggl.Daneel.ViewSources
         private const string cellIdentifier = nameof(ProjectSuggestionViewCell);
         private const string headerCellIdentifier = nameof(SelectProjectHeaderViewCell);
 
-        private IEnumerable<ProjectSuggestionCollection> groupedItems
-            => (IEnumerable<ProjectSuggestionCollection>)ItemsSource;
+        private IEnumerable<WorkspaceGroupedCollection<ProjectSuggestion>> groupedItems
+            => (IEnumerable<WorkspaceGroupedCollection<ProjectSuggestion>>)ItemsSource;
         
         public SelectProjectTableViewSource(UITableView tableView) : base(tableView)
         {
@@ -57,7 +58,7 @@ namespace Toggl.Daneel.ViewSources
         public override nint RowsInSection(UITableView tableview, nint section)
             => getGroupAt(section).Count();
 
-        private ProjectSuggestionCollection getGroupAt(nint section)
+        private WorkspaceGroupedCollection<ProjectSuggestion> getGroupAt(nint section)
             => groupedItems.ElementAt((int)section);
 
         protected override object GetItemAt(NSIndexPath indexPath)

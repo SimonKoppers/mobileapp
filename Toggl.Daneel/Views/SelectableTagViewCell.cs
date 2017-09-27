@@ -21,7 +21,7 @@ namespace Toggl.Daneel.Views
             Nib = UINib.FromName(nameof(SelectableTagViewCell), NSBundle.MainBundle);
         }
 
-        protected SelectableTagViewCell(IntPtr handle) : base(handle)
+        public SelectableTagViewCell(IntPtr handle) : base(handle)
         {
             // Note: this .ctor should not contain any initialization logic.
         }
@@ -35,7 +35,7 @@ namespace Toggl.Daneel.Views
                 var checkboxImageConverter = new BoolToConstantValueConverter<UIImage>(
                     checkBoxCheckedImage, checkBoxUncheckedImage);
 
-                var bindingSet = this.CreateBindingSet<SelectableTagViewCell, SelectableTag>();
+                var bindingSet = this.CreateBindingSet<SelectableTagViewCell, SelectableTagViewModel>();
 
                 bindingSet.Bind(TagLabel).To(vm => vm.Name);
 

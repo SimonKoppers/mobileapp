@@ -208,7 +208,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     {
                         if (suggestion.ProjectName == Resources.NoProject)
                             continue;
-                        suggestion.Workspace.Should().Be(suggestionGroup.Workspace);
+                        suggestion.Workspace.Should().Be(suggestionGroup.WorkspaceName);
                     }
                 }
             }

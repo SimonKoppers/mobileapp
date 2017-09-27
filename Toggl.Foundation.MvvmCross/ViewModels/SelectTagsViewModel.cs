@@ -8,6 +8,7 @@ using MvvmCross.Core.Navigation;
 using MvvmCross.Core.ViewModels;
 using Toggl.Foundation.Autocomplete.Suggestions;
 using Toggl.Foundation.DataSources;
+using Toggl.Foundation.MvvmCross.Collections;
 using Toggl.Multivac;
 using Toggl.Multivac.Extensions;
 
@@ -25,14 +26,14 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public string Text { get; set; } = "";
 
-        public MvxObservableCollection<SelectableTagCollection> Tags { get; }
-            = new MvxObservableCollection<SelectableTagCollection>();
+        public MvxObservableCollection<WorkspaceGroupedCollection<SelectableTagViewModel>> Tags { get; }
+            = new MvxObservableCollection<WorkspaceGroupedCollection<SelectableTagViewModel>>();
 
         public IMvxAsyncCommand CloseCommand { get; }
 
         public IMvxAsyncCommand SaveCommand { get; }
 
-        public IMvxCommand<SelectableTag> SelectTagCommand { get; }
+        public IMvxCommand<SelectableTagViewModel> SelectTagCommand { get; }
 
         public SelectTagsViewModel(ITogglDataSource dataSource, IMvxNavigationService navigationService)
         {
@@ -44,7 +45,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
             CloseCommand = new MvxAsyncCommand(close);
             SaveCommand = new MvxAsyncCommand(save);
-            SelectTagCommand = new MvxCommand<SelectableTag>(selectTag);
+            SelectTagCommand = new MvxCommand<SelectableTagViewModel>(selectTag);
         }
         
         public override void Prepare(long[] parameter)
@@ -76,19 +77,19 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
             tags.Select(createSelectableTag)
                 .GroupBy(tag => tag.Workspace)
-                .Select(grouping => new SelectableTagCollection(grouping.Key, grouping))
+                .Select(grouping => new WorkspaceGroupedCollection<SelectableTagViewModel>(grouping.Key, grouping))
                 .ForEach(Tags.Add);
         }
 
-        private SelectableTag createSelectableTag(TagSuggestion tagSuggestion)
-            => new SelectableTag(tagSuggestion, selectedTagIds.Contains(tagSuggestion.TagId));
+        private SelectableTagViewModel createSelectableTag(TagSuggestion tagSuggestion)
+            => new SelectableTagViewModel(tagSuggestion, selectedTagIds.Contains(tagSuggestion.TagId));
 
         private Task close()
             => navigationService.Close(this, defaultResult);
 
         private Task save() => navigationService.Close(this, selectedTagIds.ToArray());
 
-        private void selectTag(SelectableTag tag)
+        private void selectTag(SelectableTagViewModel tag)
         {
             tag.Selected = !tag.Selected;
 

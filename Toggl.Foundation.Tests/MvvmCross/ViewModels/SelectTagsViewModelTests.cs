@@ -94,7 +94,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var selectedTags = selectedTagIds
                     .Select(createDatabaseTagSubstitute)
                     .Select(databaseTag => new TagSuggestion(databaseTag))
-                    .Select(tagSuggestion => new SelectableTag(tagSuggestion, false));
+                    .Select(tagSuggestion => new SelectableTagViewModel(tagSuggestion, false));
                 foreach (var tag in selectedTags)
                     ViewModel.SelectTagCommand.Execute(tag);
 
@@ -202,7 +202,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 {
                     foreach (var tag in tagGroup)
                     {
-                        tag.Workspace.Should().Be(tagGroup.Workspace);
+                        tag.Workspace.Should().Be(tagGroup.WorkspaceName);
                     }
                 }
             }
@@ -243,7 +243,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Property]
             public void SetsTheSelectedPropertyOnTheTagToTheOpposite(bool initialValue)
             {
-                var selectableTag = new SelectableTag(tagSuggestion, initialValue);
+                var selectableTag = new SelectableTagViewModel(tagSuggestion, initialValue);
 
                 ViewModel.SelectTagCommand.Execute(selectableTag);
 
@@ -253,7 +253,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Fact]
             public async Task AppendsTheTagIdToSelectedTagIdsIfNotSelectedAlready()
             {
-                var selectableTag = new SelectableTag(tagSuggestion, false);
+                var selectableTag = new SelectableTagViewModel(tagSuggestion, false);
 
                 ViewModel.SelectTagCommand.Execute(selectableTag);
                 await ViewModel.SaveCommand.ExecuteAsync();
@@ -269,7 +269,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Fact]
             public async Task RemovesTheTagIdFromSelectedTagIdsIfSelectedAlready()
             {
-                var selectableTag = new SelectableTag(tagSuggestion, true);
+                var selectableTag = new SelectableTagViewModel(tagSuggestion, true);
                 ViewModel.Prepare(new long[] { selectableTag.Id });
 
                 ViewModel.SelectTagCommand.Execute(selectableTag);

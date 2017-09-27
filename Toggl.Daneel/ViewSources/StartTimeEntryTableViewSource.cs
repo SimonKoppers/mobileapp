@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Foundation;
 using MvvmCross.Binding.iOS.Views;
 using MvvmCross.Plugins.Color.iOS;
@@ -16,6 +17,8 @@ namespace Toggl.Daneel.ViewSources
         private const string projectCellIdentifier = nameof(ProjectSuggestionViewCell);
         private const string emptySuggestionIdentifier = nameof(StartTimeEntryEmptyViewCell);
 
+        public bool UseGrouping { get; set; }
+
         public StartTimeEntryTableViewSource(UITableView tableView)
             : base(tableView)
         {
@@ -26,6 +29,13 @@ namespace Toggl.Daneel.ViewSources
             tableView.RegisterNibForCellReuse(StartTimeEntryViewCell.Nib, timeEntryCellIdentifier);
             tableView.RegisterNibForCellReuse(ProjectSuggestionViewCell.Nib, projectCellIdentifier);
             tableView.RegisterNibForCellReuse(StartTimeEntryEmptyViewCell.Nib, emptySuggestionIdentifier);
+        }
+
+        public override UIView GetViewForHeader(UITableView tableView, nint section)
+        {
+            if (!UseGrouping) return null;
+
+            return null;
         }
 
         public override UITableViewCell GetCell(UITableView tableView, NSIndexPath indexPath)

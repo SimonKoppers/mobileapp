@@ -8,6 +8,7 @@ using MvvmCross.Binding.iOS.Views;
 using MvvmCross.Core.ViewModels;
 using MvvmCross.Plugins.Color.iOS;
 using Toggl.Daneel.Views;
+using Toggl.Foundation.MvvmCross.Collections;
 using Toggl.Foundation.MvvmCross.Helper;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using UIKit;

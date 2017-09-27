@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Multivac;
 using Toggl.Multivac.Extensions;
 
-namespace Toggl.Foundation.MvvmCross.ViewModels
+namespace Toggl.Foundation.MvvmCross.Collections
 {
     public sealed class TimeEntryViewModelCollection : ObservableCollection<TimeEntryViewModel>
     {

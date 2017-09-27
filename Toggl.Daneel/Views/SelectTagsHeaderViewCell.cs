@@ -2,6 +2,7 @@
 using Foundation;
 using MvvmCross.Binding.BindingContext;
 using MvvmCross.Binding.iOS.Views;
+using Toggl.Foundation.MvvmCross.Collections;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using UIKit;
 
@@ -23,7 +24,7 @@ namespace Toggl.Daneel.Views
             Nib = UINib.FromName(nameof(SelectTagsHeaderViewCell), NSBundle.MainBundle);
         }
 
-        protected SelectTagsHeaderViewCell(IntPtr handle) : base(handle)
+        public SelectTagsHeaderViewCell(IntPtr handle) : base(handle)
         {
             // Note: this .ctor should not contain any initialization logic.
         }
@@ -34,9 +35,9 @@ namespace Toggl.Daneel.Views
 
             this.DelayBind(() =>
             {
-                var bindingSet = this.CreateBindingSet<SelectTagsHeaderViewCell, SelectableTagCollection>();
+                var bindingSet = this.CreateBindingSet<SelectTagsHeaderViewCell, WorkspaceGroupedCollection<SelectableTagViewModel>>();
 
-                bindingSet.Bind(WorkspaceLabel).To(vm => vm.Workspace);
+                bindingSet.Bind(WorkspaceLabel).To(vm => vm.WorkspaceName);
 
                 bindingSet.Apply();
             });

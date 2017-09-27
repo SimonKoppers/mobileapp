@@ -12,6 +12,7 @@ using Toggl.Multivac;
 using Toggl.Multivac.Extensions;
 using Toggl.PrimeRadiant.Models;
 using System.Reactive.Disposables;
+using Toggl.Foundation.MvvmCross.Collections;
 
 namespace Toggl.Foundation.MvvmCross.ViewModels
 {
