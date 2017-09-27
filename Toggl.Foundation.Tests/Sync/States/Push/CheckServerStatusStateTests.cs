@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reactive;
 using System.Reactive.Linq;
 using FluentAssertions;
 using FsCheck.Xunit;
@@ -30,7 +31,7 @@ namespace Toggl.Foundation.Tests.Sync.States.Push
         [Fact]
         public void TheServerIsAvailableTransitionIsReturnedWhenTheStatusEndpointReturnsOK()
         {
-            api.Status.Get().Returns(Observable.Return(true));
+            api.Status.IsAvailable().Returns(Observable.Return(Unit.Default));
 
             var transition = state.Start().Wait();
 
@@ -40,7 +41,7 @@ namespace Toggl.Foundation.Tests.Sync.States.Push
         [Fact]
         public void TheTransitionIsDelayedAtMostByTheNextSlowDelayTimeFromTheRetryDelayServiceWhenInternalServerErrorOccurs()
         {
-            api.Status.Get().Returns(Observable.Throw<bool>(new InternalServerErrorException()));
+            api.Status.IsAvailable().Returns(Observable.Throw<Unit>(new InternalServerErrorException()));
             delay.NextFastDelay().Returns(TimeSpan.FromSeconds(100));
             delay.NextSlowDelay().Returns(TimeSpan.FromSeconds(10));
             var hasCompleted = false;
@@ -56,7 +57,7 @@ namespace Toggl.Foundation.Tests.Sync.States.Push
         [Fact]
         public void TheTransitionIsDelayedAtLeastByTheNextSlowDelayTimeFromTheRetryDelayServiceWhenInternalServerErrorOccurs()
         {
-            api.Status.Get().Returns(Observable.Throw<bool>(new InternalServerErrorException()));
+            api.Status.IsAvailable().Returns(Observable.Throw<Unit>(new InternalServerErrorException()));
             delay.NextFastDelay().Returns(TimeSpan.FromSeconds(1));
             delay.NextSlowDelay().Returns(TimeSpan.FromSeconds(10));
             var hasCompleted = false;
@@ -73,7 +74,7 @@ namespace Toggl.Foundation.Tests.Sync.States.Push
         [MemberData(nameof(ServerExceptionsOtherThanInternalServerErrorException))]
         public void TheTransitionIsDelayedAtMostByTheNextFastDelayTimeFromTheRetryDelayServiceWhenAServerErrorOtherThanInternalServerErrorOccurs(ServerErrorException exception)
         {
-            api.Status.Get().Returns(Observable.Throw<bool>(exception));
+            api.Status.IsAvailable().Returns(Observable.Throw<Unit>(exception));
             delay.NextFastDelay().Returns(TimeSpan.FromSeconds(10));
             delay.NextSlowDelay().Returns(TimeSpan.FromSeconds(100));
             var hasCompleted = false;
@@ -90,7 +91,7 @@ namespace Toggl.Foundation.Tests.Sync.States.Push
         [MemberData(nameof(ServerExceptionsOtherThanInternalServerErrorException))]
         public void TheTransitionIsDelayedAtLeastByTheNextFastDelayTimeFromTheRetryDelayServiceWhenAServerErrorOtherThanInternalServerErrorOccurs(ServerErrorException exception)
         {
-            api.Status.Get().Returns(Observable.Throw<bool>(exception));
+            api.Status.IsAvailable().Returns(Observable.Throw<Unit>(exception));
             delay.NextFastDelay().Returns(TimeSpan.FromSeconds(10));
             delay.NextSlowDelay().Returns(TimeSpan.FromSeconds(1));
             var hasCompleted = false;
