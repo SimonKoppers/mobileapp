@@ -160,7 +160,7 @@ namespace Toggl.PrimeRadiant.Realm
             var rival = (TRealmEntity)realm.All<TRealmEntity>().SingleOrDefault(resolver.AreRivals(entity));
             if (rival != null)
             {
-                (TModel fixedEntity, TModel fixedRival) = resolver.FixRivals(entity, rival, realm.All<TRealmEntity>());
+                (TModel fixedEntity, TModel fixedRival) = resolver.FixRivals(entity, rival);
                 entity.SetPropertiesFrom(fixedEntity, realm);
                 rival.SetPropertiesFrom(fixedRival, realm);
             }
