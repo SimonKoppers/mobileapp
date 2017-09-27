@@ -23,22 +23,15 @@ namespace Toggl.Foundation.Sync.States.Push
         }
 
         public IObservable<ITransition> Start()
-            => api.Status.Get()
+            => api.Status.IsAvailable()
                 .SelectMany(proceed)
-                .Catch((InternalServerErrorException e) => delayedRetry(delay.NextSlowDelay()))
-                .Catch((ServerErrorException e) => delayedRetry(delay.NextFastDelay()));
+                .Catch((Exception e) => delayedRetry(getDelay(e)));
 
-        private IObservable<ITransition> proceed(bool isAvaialbe)
-            => isAvaialbe
-                ? Observable.Return(ServerIsAvailable.Transition())
-                : delayedRetry(delay.NextFastDelay());
-
-        private IObservable<ITransition> retry(Exception exception)
-            => delayedRetry(getDelay(exception));
+        private IObservable<ITransition> proceed
+            => Observable.Return(ServerIsAvailable.Transition());
 
         private IObservable<ITransition> delayedRetry(TimeSpan period)
-            => Observable.Return((ITransition)Retry.Transition())
-                .Delay(period, scheduler);
+            => Observable.Return(Retry.Transition()).Delay(period, scheduler);
 
         private TimeSpan getDelay(Exception exception)
             => exception is InternalServerErrorException
