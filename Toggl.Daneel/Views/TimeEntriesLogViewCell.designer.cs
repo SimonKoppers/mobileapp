@@ -19,6 +19,10 @@ namespace Toggl.Daneel.Views
 
         [Outlet]
         [GeneratedCode ("iOS Designer", "1.0")]
+        UIKit.UIImageView ContinueImageView { get; set; }
+
+        [Outlet]
+        [GeneratedCode ("iOS Designer", "1.0")]
         UIKit.UILabel DescriptionLabel { get; set; }
 
         [Outlet]
@@ -31,13 +35,26 @@ namespace Toggl.Daneel.Views
 
         [Outlet]
         [GeneratedCode ("iOS Designer", "1.0")]
+        UIKit.UIImageView SyncErrorImageView { get; set; }
+
+        [Outlet]
+        [GeneratedCode ("iOS Designer", "1.0")]
         UIKit.UILabel TimeLabel { get; set; }
+
+        [Outlet]
+        [GeneratedCode ("iOS Designer", "1.0")]
+        UIKit.UIImageView UnsyncedImageView { get; set; }
 
         void ReleaseDesignerOutlets ()
         {
             if (ContinueButton != null) {
                 ContinueButton.Dispose ();
                 ContinueButton = null;
+            }
+
+            if (ContinueImageView != null) {
+                ContinueImageView.Dispose ();
+                ContinueImageView = null;
             }
 
             if (DescriptionLabel != null) {
@@ -55,9 +72,19 @@ namespace Toggl.Daneel.Views
                 ProjectTaskClientLabel = null;
             }
 
+            if (SyncErrorImageView != null) {
+                SyncErrorImageView.Dispose ();
+                SyncErrorImageView = null;
+            }
+
             if (TimeLabel != null) {
                 TimeLabel.Dispose ();
                 TimeLabel = null;
+            }
+
+            if (UnsyncedImageView != null) {
+                UnsyncedImageView.Dispose ();
+                UnsyncedImageView = null;
             }
         }
     }

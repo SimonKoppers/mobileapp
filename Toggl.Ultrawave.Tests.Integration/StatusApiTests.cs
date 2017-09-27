@@ -1,4 +1,6 @@
-﻿using System.Reactive.Linq;
+﻿using System;
+using System.Reactive;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Toggl.Ultrawave.Network;
@@ -15,10 +17,15 @@ namespace Toggl.Ultrawave.Tests.Integration
             public async Task ShouldSucceedWithoutCredentials()
             {
                 var togglClient = TogglApiWith(Credentials.None);
+                Exception caughtException = null;
 
-                var status = await togglClient.Status.Get();
+                await togglClient.Status.IsAvailable().Catch((Exception e) =>
+                {
+                    caughtException = e;
+                    return Observable.Return(Unit.Default);
+                });
 
-                status.Should().Be(true);
+                caughtException.Should().BeNull();
             }
         }
     }

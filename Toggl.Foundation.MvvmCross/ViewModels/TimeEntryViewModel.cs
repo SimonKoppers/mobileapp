@@ -1,6 +1,7 @@
 ﻿using System;
 using MvvmCross.Core.ViewModels;
 using Toggl.Multivac;
+using Toggl.PrimeRadiant;
 using Toggl.PrimeRadiant.Models;
 
 namespace Toggl.Foundation.MvvmCross.ViewModels
@@ -30,6 +31,10 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public bool HasProject { get; }
 
+        public bool NeedsSync { get; }
+
+        public bool CanSync { get; }
+
         public TimeEntryViewModel(IDatabaseTimeEntry timeEntry)
         {
             Ensure.Argument.IsNotNull(timeEntry, nameof(timeEntry));
@@ -40,6 +45,9 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             Description = timeEntry.Description;
             HasProject = timeEntry.Project != null;
             Duration = timeEntry.Stop.Value - Start;
+
+            CanSync = timeEntry.SyncStatus != SyncStatus.SyncFailed;
+            NeedsSync = timeEntry.SyncStatus == SyncStatus.SyncNeeded;
 
             if (!HasProject) return;
 

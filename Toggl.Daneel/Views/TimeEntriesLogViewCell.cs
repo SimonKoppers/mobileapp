@@ -48,6 +48,7 @@ namespace Toggl.Daneel.Views
                 var colorConverter = new MvxRGBValueConverter();
                 var visibilityConverter = new MvxVisibilityValueConverter();
                 var timeSpanConverter = new TimeSpanToDurationValueConverter();
+                var invertedVisibilityConverter = new MvxInvertedVisibilityValueConverter();
                 var projectTaskClientCombiner = new ProjectTaskClientValueCombiner(
                     ProjectTaskClientLabel.Font.CapHeight,
                     Color.TimeEntriesLog.ClientColor.ToNativeColor(),
@@ -77,12 +78,32 @@ namespace Toggl.Daneel.Views
                           .For(v => v.Constant)
                           .To(vm => vm.HasProject)
                           .WithConversion(descriptionTopDistanceValueConverter);
-                
+
                 bindingSet.Bind(ProjectTaskClientLabel)
                           .For(v => v.BindVisibility())
                           .To(vm => vm.HasProject)
                           .WithConversion(visibilityConverter);
 
+                bindingSet.Bind(SyncErrorImageView)
+                          .For(v => v.BindVisibility())
+                          .To(vm => vm.CanSync)
+                          .WithConversion(invertedVisibilityConverter);
+
+                bindingSet.Bind(UnsyncedImageView)
+                          .For(v => v.BindVisibility())
+                          .To(vm => vm.NeedsSync)
+                          .WithConversion(visibilityConverter);
+
+                bindingSet.Bind(ContinueButton)
+                          .For(v => v.BindVisibility())
+                          .To(vm => vm.CanSync)
+                          .WithConversion(visibilityConverter);
+
+                bindingSet.Bind(ContinueImageView)
+                          .For(v => v.BindVisibility())
+                          .To(vm => vm.CanSync)
+                          .WithConversion(visibilityConverter);
+                
                 bindingSet.Apply();
             });
         }

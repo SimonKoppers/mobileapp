@@ -308,6 +308,10 @@
     <ImageAsset Include="Resources\Images.xcassets\icSearch.imageset\search.png" />
     <ImageAsset Include="Resources\Images.xcassets\icSearch.imageset\search%402x.png" />
     <ImageAsset Include="Resources\Images.xcassets\icSearch.imageset\search%403x.png" />
+    <ImageAsset Include="Resources\Images.xcassets\icUnsynced.imageset\Contents.json" />
+    <ImageAsset Include="Resources\Images.xcassets\icUnsynced.imageset\icUnsynced.png" />
+    <ImageAsset Include="Resources\Images.xcassets\icUnsynced.imageset\icUnsynced%402x.png" />
+    <ImageAsset Include="Resources\Images.xcassets\icUnsynced.imageset\icUnsynced%403x.png" />
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="LaunchScreen.storyboard" />
