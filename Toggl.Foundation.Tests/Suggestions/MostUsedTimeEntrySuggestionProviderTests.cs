@@ -107,6 +107,31 @@ namespace Toggl.Foundation.Tests.Suggestions
 
                 suggestions.Should().OnlyContain(suggestion => expectedDescriptions.Contains(suggestion.Description));
             }
+
+            [Fact]
+            public async Task DoesNotReturnTimeEntriesWithoutDescriptionAndProject()
+            {
+                var builder = TimeEntry.Builder.Create(12)
+                                       .SetUserId(9)
+                                       .SetWorkspaceId(2)
+                                       .SetAt(DateTimeOffset.Now)
+                                       .SetStart(DateTimeOffset.UtcNow)
+                                       .SetDescription("");
+                var emptyTimeEntries = Enumerable.Range(20, 0)
+                    .Select(_ => builder.Build());
+                var timeEntries = new List<IDatabaseTimeEntry>(emptyTimeEntries);
+                timeEntries.AddRange(getTimeEntries(1, 2, 3, 4, 5));
+                Database.TimeEntries
+                        .GetAll(Arg.Any<Func<IDatabaseTimeEntry, bool>>())
+                        .Returns(Observable.Return(timeEntries));
+
+                var suggestions = await Provider.GetSuggestions().ToList();
+
+                suggestions.Should().NotContain(
+                    suggestion => !string.IsNullOrEmpty(suggestion.Description)
+                                  && suggestion.ProjectId != null
+                );
+            }
         }
     }
 }
