@@ -246,6 +246,7 @@
     <Compile Include="Autocomplete\AutocompleteProviderTests.cs" />
     <Compile Include="Autocomplete\TextFieldInfoTests.cs" />
     <Compile Include="MvvmCross\ViewModels\SelectProjectViewModelTests.cs" />
+    <Compile Include="MvvmCross\ViewModels\SelectTagsViewModelTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MvvmCross\ViewModels\StartTimeEntryViewModelTests.cs" />

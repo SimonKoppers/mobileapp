@@ -80,7 +80,7 @@ namespace Toggl.Daneel.ViewSources
             => groupedItems.ElementAt((int)section);
 
         protected override object GetItemAt(NSIndexPath indexPath)
-            => groupedItems.ElementAt(indexPath.Section).ElementAt((int)indexPath.Item);
+            => groupedItems.ElementAtOrDefault(indexPath.Section)?.ElementAtOrDefault((int)indexPath.Item);
 
         private UITableViewHeaderFooterView getOrCreateHeaderViewFor(UITableView tableView)
             => tableView.DequeueReusableHeaderFooterView(headerCellIdentifier);

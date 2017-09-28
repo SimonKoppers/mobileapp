@@ -87,6 +87,10 @@ namespace Toggl.Daneel.ViewControllers
                       .For(v => v.BindTap())
                       .To(vm => vm.SelectStartDateTimeCommand);
 
+            bindingSet.Bind(TagsLabel)
+                      .For(v => v.BindTap())
+                      .To(vm => vm.SelectTagsCommand);
+
             //Project visibility
             bindingSet.Bind(AddProjectAndTaskView)
                       .For(v => v.BindVisible())

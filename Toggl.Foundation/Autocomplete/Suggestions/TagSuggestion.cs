@@ -13,10 +13,13 @@ namespace Toggl.Foundation.Autocomplete.Suggestions
 
         public string Name { get; }
 
+        public string Workspace { get; }
+
         public TagSuggestion(IDatabaseTag tag)
         {
             TagId = tag.Id;
             Name = tag.Name;
+            Workspace = tag.Workspace.Name;
         }
 
         public override int GetHashCode()

@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using Foundation;
 using MvvmCross.Binding;
 using MvvmCross.Binding.Bindings.Target;
 using MvvmCross.Platform.Core;
 using Toggl.Daneel.Extensions;
+using Toggl.Daneel.Views;
 using Toggl.Foundation.Autocomplete;
 using UIKit;
 
@@ -16,12 +15,10 @@ namespace Toggl.Daneel.Binding
         public const string BindingName = "TextFieldInfo";
         private const string selectedTextRangeChangedKey = "selectedTextRange";
 
-        private TextFieldInfo textFieldInfo;
+        private TextFieldInfo textFieldInfo = TextFieldInfo.Empty;
 
-        private readonly IDisposable fireValueChangeDisposable;
         private readonly IDisposable selectedTextRangeDisposable;
         private readonly TextViewInfoDelegate infoDelegate = new TextViewInfoDelegate();
-        private readonly Subject<TextFieldInfo> textFieldInfoSubject = new Subject<TextFieldInfo>();
 
         public override MvxBindingMode DefaultMode => MvxBindingMode.TwoWay;
 
@@ -30,6 +27,7 @@ namespace Toggl.Daneel.Binding
         {
             Target.Delegate = infoDelegate;
 
+            infoDelegate.TagDeleted += onTagDeleted;
             infoDelegate.TextChanged += onTextChanged;
             infoDelegate.ProjectDeleted += onProjectDeleted;
 
@@ -38,10 +36,6 @@ namespace Toggl.Daneel.Binding
                 NSKeyValueObservingOptions.OldNew,
                 onSelectedTextRangeChanged
             );
-
-            fireValueChangeDisposable = textFieldInfoSubject
-                .AsObservable()
-                .Subscribe(onTextFieldInfoChanged);
         }
 
         protected override void SetValue(TextFieldInfo value)
@@ -64,9 +58,9 @@ namespace Toggl.Daneel.Binding
 
             Target.Delegate = null;
 
-            fireValueChangeDisposable?.Dispose();
             selectedTextRangeDisposable?.Dispose();
 
+            infoDelegate.TagDeleted -= onTagDeleted;
             infoDelegate.TextChanged -= onTextChanged;
             infoDelegate.ProjectDeleted -= onProjectDeleted;
         }
@@ -81,10 +75,33 @@ namespace Toggl.Daneel.Binding
         {
             var description = Target.GetDescription(textFieldInfo);
 
-            textFieldInfoSubject.OnNext(
+            onTextFieldInfoChanged(
                 textFieldInfo
                     .RemoveProjectInfo()
                     .WithTextAndCursor(description, description.Length));
+        }
+
+        private void onTagDeleted(object sender, TextViewInfoDelegate.TagDeletedEventArgs e)
+        {
+            var currentIndex = textFieldInfo.Text.Length + textFieldInfo.PaddedProjectName().Length;
+            foreach (var tag in textFieldInfo.Tags)
+            {
+                var tagTextLength = tag.Name.Length + 6;
+                var tagStart = currentIndex;
+                var tagEnd = currentIndex + tagTextLength;
+                currentIndex = tagEnd;
+
+                var cursorIsInsideTag = e.Index <= currentIndex;
+                if (!cursorIsInsideTag) continue;
+
+                var description = Target.GetDescription(textFieldInfo);
+
+                onTextFieldInfoChanged(
+                    textFieldInfo
+                        .RemoveTag(tag)
+                        .WithTextAndCursor(description, tagStart));
+                return;
+            }
         }
 
         private void queueValueChange()
@@ -96,19 +113,40 @@ namespace Toggl.Daneel.Binding
             var descriptionLength = newDescription.Length;
 
             var newCursorPosition = (int)Target.GetOffsetFromPosition(Target.BeginningOfDocument, selectedRangeStart);
-            var cursorIsInsideProjectToken = newCursorPosition > descriptionLength;
-            if (!cursorIsInsideProjectToken)
+
+            var isInsideDescriptionBounds = newCursorPosition <= descriptionLength;
+            if (isInsideDescriptionBounds)
             {
-                textFieldInfoSubject.OnNext(textFieldInfo.WithTextAndCursor(newDescription, newCursorPosition));
+                onTextFieldInfoChanged(textFieldInfo.WithTextAndCursor(newDescription, newCursorPosition));
                 return;
             }
 
-            var paddedProjectLength = textFieldInfo.PaddedProjectName().Length;
             var oldCursorPosition = textFieldInfo.CursorPosition;
             var isMovingForward = newCursorPosition >= oldCursorPosition;
-            var actualCursorPosition = descriptionLength + (isMovingForward ? paddedProjectLength : 0);
 
-            textFieldInfoSubject.OnNext(textFieldInfo.WithTextAndCursor(newDescription, actualCursorPosition));
+            var paddedProjectLength = textFieldInfo.PaddedProjectName().Length;
+            var cursorIsInsideProjectToken = newCursorPosition <= descriptionLength + paddedProjectLength;
+            if (cursorIsInsideProjectToken)
+            {
+                var actualCursorPosition = descriptionLength + (isMovingForward ? paddedProjectLength : 0);
+
+                onTextFieldInfoChanged(textFieldInfo.WithTextAndCursor(newDescription, actualCursorPosition));
+                return;
+            }
+
+            var currentIndex = descriptionLength + paddedProjectLength;
+            foreach (var tag in textFieldInfo.Tags)
+            {
+                var tagTextLength = tag.Name.Length + 6;
+                currentIndex += tagTextLength;
+                var cursorIsInsideTag = newCursorPosition <= currentIndex;
+                if (!cursorIsInsideTag) continue;
+
+                var actualCursorPosition = currentIndex - (isMovingForward ? 0 : tagTextLength);
+
+                onTextFieldInfoChanged(textFieldInfo.WithTextAndCursor(newDescription, actualCursorPosition));
+                return;
+            }
         }
 
         private void onTextFieldInfoChanged(TextFieldInfo info)
@@ -119,16 +157,29 @@ namespace Toggl.Daneel.Binding
 
         private void setTextFieldInfo(TextFieldInfo info)
         {
-            if (textFieldInfo.Text != info.Text || textFieldInfo.ProjectName != info.ProjectName)
-                Target.SetNeedsDisplay();
+            if (textFieldInfo.Text != info.Text 
+             || textFieldInfo.ProjectName != info.ProjectName
+             || textFieldInfo.Tags.Length != info.Tags.Length)
+            Target.SetNeedsDisplay();
 
             textFieldInfo = info;
         }
 
         private sealed class TextViewInfoDelegate : NSObject, IUITextViewDelegate
         {
+            public class TagDeletedEventArgs : EventArgs
+            {
+                public TagDeletedEventArgs(nint index)
+                {
+                    Index = index;
+                }
+
+                public nint Index { get; }
+            }
+
             public event EventHandler TextChanged;
             public event EventHandler ProjectDeleted;
+            public event EventHandler<TagDeletedEventArgs> TagDeleted;
 
             [Export("textViewDidChange:")]
             public void DidChange(UITextView textView)
@@ -142,13 +193,22 @@ namespace Toggl.Daneel.Binding
 
                 var cursorPosition = range.Location;
                 var attrs = textView.AttributedText.GetAttributes(cursorPosition, out var attrRange);
-                var isDeletingInsideProjectNameTag = attrs.ObjectForKey(UIStringAttributeKey.ForegroundColor) != null;
-                if (!isDeletingInsideProjectNameTag)
-                    return true;
 
-                textView.AttributedText = textView.AttributedText.Substring(0, attrRange.Location);
-                ProjectDeleted.Raise(this);
-                return false;
+                var isDeletingProject = attrs.ObjectForKey(TimeEntryTagsTextView.RoundedBackground) != null;
+                if (isDeletingProject)
+                {
+                    ProjectDeleted.Raise(this);
+                    return false;
+                }
+
+                var isDeletingTag = attrs.ObjectForKey(TimeEntryTagsTextView.RoundedBorders) != null;
+                if (isDeletingTag)
+                {
+                    TagDeleted?.Invoke(this, new TagDeletedEventArgs(cursorPosition));
+                    return false;
+                }
+
+                return true;
             }
 
             private static bool isPressingBackspace(NSRange range, string text)

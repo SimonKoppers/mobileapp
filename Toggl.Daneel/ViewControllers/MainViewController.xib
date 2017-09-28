@@ -78,6 +78,13 @@
                                                 <constraint firstAttribute="height" constant="32" id="9BH-86-07X"/>
                                             </constraints>
                                         </view>
+                                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="mxU-Yy-g7c">
+                                            <rect key="frame" x="0.0" y="43" width="375" height="1"/>
+                                            <color key="backgroundColor" red="0.90980392156862744" green="0.90980392156862744" blue="0.90980392156862744" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="0.5" id="N8t-WU-2KK"/>
+                                            </constraints>
+                                        </view>
                                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="5K9-cC-7E8">
                                             <rect key="frame" x="0.0" y="44" width="375" height="477"/>
                                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
@@ -114,6 +121,7 @@ TO SEE THE LOG</string>
                                     <constraints>
                                         <constraint firstItem="LV7-Bw-hnV" firstAttribute="top" secondItem="wKL-ZP-Ff4" secondAttribute="bottom" constant="5" id="2ky-C9-dkz"/>
                                         <constraint firstItem="tGg-Dk-cfk" firstAttribute="width" secondItem="EzU-Pd-V8e" secondAttribute="width" id="A67-kc-kBu"/>
+                                        <constraint firstAttribute="trailing" secondItem="mxU-Yy-g7c" secondAttribute="trailing" id="Fd4-fU-96N"/>
                                         <constraint firstItem="wKL-ZP-Ff4" firstAttribute="top" secondItem="5K9-cC-7E8" secondAttribute="bottom" constant="24" id="HTG-8h-Hsb"/>
                                         <constraint firstAttribute="bottom" secondItem="LV7-Bw-hnV" secondAttribute="bottom" id="MCj-Yu-VUE"/>
                                         <constraint firstItem="5K9-cC-7E8" firstAttribute="top" secondItem="tGg-Dk-cfk" secondAttribute="bottom" constant="12" id="S2B-dA-cpO"/>
@@ -122,6 +130,8 @@ TO SEE THE LOG</string>
                                         <constraint firstItem="tGg-Dk-cfk" firstAttribute="top" secondItem="EzU-Pd-V8e" secondAttribute="top" id="ceS-NM-2xh"/>
                                         <constraint firstItem="LV7-Bw-hnV" firstAttribute="centerX" secondItem="EzU-Pd-V8e" secondAttribute="centerX" id="fWo-Ty-Iln"/>
                                         <constraint firstItem="tGg-Dk-cfk" firstAttribute="centerX" secondItem="EzU-Pd-V8e" secondAttribute="centerX" id="fxy-X1-Jl8"/>
+                                        <constraint firstItem="mxU-Yy-g7c" firstAttribute="leading" secondItem="EzU-Pd-V8e" secondAttribute="leading" id="o7A-xv-mri"/>
+                                        <constraint firstItem="5K9-cC-7E8" firstAttribute="top" secondItem="mxU-Yy-g7c" secondAttribute="bottom" id="pWt-QF-DYe"/>
                                         <constraint firstItem="wKL-ZP-Ff4" firstAttribute="centerX" secondItem="LV7-Bw-hnV" secondAttribute="centerX" id="ref-rY-xle"/>
                                     </constraints>
                                 </view>

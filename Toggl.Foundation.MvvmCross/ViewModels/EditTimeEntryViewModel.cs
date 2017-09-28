@@ -80,6 +80,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public IMvxAsyncCommand SelectProjectCommand { get; }
 
+        public IMvxAsyncCommand SelectTagsCommand { get; }
+
         public EditTimeEntryViewModel(ITogglDataSource dataSource, IMvxNavigationService navigationService, ITimeService timeService)
         {
             Ensure.Argument.IsNotNull(dataSource, nameof(dataSource));
@@ -96,6 +98,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             EditDurationCommand = new MvxAsyncCommand(editDuration);
             SelectStartDateTimeCommand = new MvxAsyncCommand(selectStartDateTime);
             SelectProjectCommand = new MvxAsyncCommand(selectProject);
+            SelectTagsCommand = new MvxAsyncCommand(selectTags);
         }
 
         public override void Prepare(long parameter)
@@ -207,5 +210,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             StartTime = selectedDuration.Start;
             StopTime = selectedDuration.Stop;
         }
+
+        private Task selectTags() => navigationService.Navigate<SelectTagsViewModel>();
     }
 }

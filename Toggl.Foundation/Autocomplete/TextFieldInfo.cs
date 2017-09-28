@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Toggl.Foundation.Autocomplete.Suggestions;
 using Toggl.Multivac.Models;
 
@@ -74,6 +75,13 @@ namespace Toggl.Foundation.Autocomplete
             
             return new TextFieldInfo(Text, CursorPosition, ProjectId, ProjectName, ProjectColor, tags);
         }
+
+        public TextFieldInfo RemoveTag(TagSuggestion tag)
+        {
+            var newTags = Tags.ToList();
+            newTags.Remove(tag);
+            return new TextFieldInfo(Text, CursorPosition, ProjectId, ProjectName, ProjectColor, newTags.ToArray());
+        }
        
         public static bool operator ==(TextFieldInfo left, TextFieldInfo right)
             => left.Equals(right);
@@ -91,6 +99,7 @@ namespace Toggl.Foundation.Autocomplete
                 return (Text.GetHashCode() * 397) ^
                        (CursorPosition.GetHashCode() * 397) ^
                        (ProjectColor.GetHashCode() * 397) ^
+                       (Tags.Length.GetHashCode() * 397) ^
                        ProjectName.GetHashCode();
             }
         }
