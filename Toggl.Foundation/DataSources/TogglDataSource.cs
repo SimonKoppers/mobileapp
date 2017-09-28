@@ -23,6 +23,7 @@ namespace Toggl.Foundation.DataSources
             this.database = database;
 
             User = new UserDataSource(database.User);
+            Tags = new TagsDataSource(database.Tags);
             Projects = new ProjectsDataSource(database.Projects);
             TimeEntries = new TimeEntriesDataSource(database.IdProvider, database.TimeEntries, timeService);
 
@@ -31,7 +32,7 @@ namespace Toggl.Foundation.DataSources
         }
 
         public IUserSource User { get; }
-        public ITagsSource Tags => throw new NotImplementedException();
+        public ITagsSource Tags { get; }
         public ITasksSource Tasks => throw new NotImplementedException();
         public IClientsSource Clients => throw new NotImplementedException();
         public IProjectsSource Projects { get; }
