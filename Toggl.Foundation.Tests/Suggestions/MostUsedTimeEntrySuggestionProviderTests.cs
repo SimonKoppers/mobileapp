@@ -127,9 +127,8 @@ namespace Toggl.Foundation.Tests.Suggestions
 
                 var suggestions = await Provider.GetSuggestions().ToList();
 
-                suggestions.Should().NotContain(
+                suggestions.Should().OnlyContain(
                     suggestion => !string.IsNullOrEmpty(suggestion.Description)
-                                  && suggestion.ProjectId != null
                 );
             }
         }
